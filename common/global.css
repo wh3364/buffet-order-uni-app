@@ -1,0 +1,119 @@
+text {
+	color: #343434;
+	font-size: 28rpx
+}
+
+.add-sub-icon {
+	width: 44rpx;
+	height: 44rpx;
+}
+
+.but {
+	color: #FFF;
+	background-color: #00B0FF;
+}
+
+.but-hover {
+	color: #FFF;
+	background-color: #80D8FF;
+}
+
+.but-red {
+	color: #FFF;
+	background-color: #FF6666;
+}
+
+.but-red-hover {
+	color: #FFF;
+	background-color: #FFCCCC;
+}
+
+.input-text {
+	height: 50rpx;
+	padding: 15rpx 25rpx;
+	line-height: 50rpx;
+	font-size: 28rpx;
+	background: #FFF;
+}
+
+.bg-green {
+	background-color: #00ff00;
+}
+
+.bg-red {
+	background-color: #ff5500;
+}
+
+.bg-blue {
+	background-color: #00B0FF;
+}
+
+.white {
+	color: #FFF !important
+}
+
+.unemp-color {
+	color: #aaaaaa;
+}
+
+.deputy-color {
+	color: #80D8FF;
+}
+
+.main-color {
+	color: #00B0FF;
+}
+
+.list-cell-navigate {}
+
+.comment-body {
+	padding: 22rpx 30rpx;
+}
+
+.comment {
+	display: flex;
+	flex-grow: 1;
+	flex-direction: column;
+}
+
+.flex {
+	display: flex;
+}
+
+.row {
+	flex-direction: row;
+}
+
+.column {
+	flex-direction: column;
+}
+
+/* .h1 {
+	font-size: 80rpx;
+	font-weight: 700;
+}
+
+.h2 {
+	font-size: 60rpx;
+	font-weight: 700;
+}
+
+.h3 {
+	font-size: 48rpx;
+	font-weight: 700;
+}
+
+.h4 {
+	font-size: 36rpx;
+	font-weight: 700;
+}
+
+.h5 {
+	font-size: 28rpx;
+	color: #8f8f94;
+}
+
+.h6 {
+	font-size: 24rpx;
+	color: #8f8f94;
+} */

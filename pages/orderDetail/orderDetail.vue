@@ -1,0 +1,302 @@
+<template>
+	<view class="comment">
+		<view class="top flex row">
+			<text>餐厅名</text>
+			<text v-if="order.orderState === 0">待付款</text>
+			<text v-else-if="order.orderState === 1">已付款</text>
+			<text v-else-if="order.orderState === 2">发货中</text>
+			<text v-else-if="order.orderState === 3">已完成</text>
+			<text v-else-if="order.orderState === 4">已取消</text>
+			<text v-else>订单状态</text>
+		</view>
+		<view class="mid">
+			<view v-for="(item, index) in order.orderJsonBody" :key="index" class="order-item flex row">
+				<view class="item-left flex row">
+					<image :src="item.img" class="item-img"></image>
+					<view class="item-text flex column">
+						<text>{{item.na}}</text>
+						<text class="unemp-color">{{item.de}}</text>
+						<text>×{{item.nu}}</text>
+					</view>
+				</view>
+				<text class="item-right">{{item.pr}}￥</text>
+			</view>
+
+			<view class="item-bottom flex row">
+				<text class="unemp-color">共{{count}}件,合计</text>
+				<text>￥{{total}}</text>
+			</view>
+		</view>
+		<view class="bottom flex column">
+			<view class="flex row">
+				<text class="bottom-left unemp-color">下单时间</text>
+				<text class="bottom-right">{{order.orderCreateTime}}</text>
+			</view>
+			<view class="flex row">
+				<text class="bottom-left unemp-color">取餐方式</text>
+				<text v-if="order.orderWay === 0" class="bottom-right">线下点餐</text>
+				<text v-else-if="order.orderWay === 1" class="bottom-right">外卖</text>
+				<text v-else class="bottom-right">取餐方式</text>
+
+			</view>
+			<view v-if="order.orderWay === 0" class="flex row">
+				<text class="bottom-left unemp-color">取餐码</text>
+				<text class="bottom-right">{{order.orderGetNumb}}</text>
+			</view>
+			<view v-if="order.orderWay === 1" class="flex row">
+				<text class="bottom-left unemp-color">地址</text>
+				<text class="bottom-right">{{order.orderAddress}}</text>
+			</view>
+			<view class="flex row">
+				<text class="bottom-left unemp-color">备注</text>
+				<text class="bottom-right">{{order.orderNote}}</text>
+			</view>
+			<view class="flex row">
+				<text class="bottom-left unemp-color">订单号</text>
+				<text class="bottom-right">{{order.orderId}}</text>
+			</view>
+		</view>
+		<view class="bottom-but">
+			<button v-if="order.orderState === 0" class="but" hover-class="but-hover" @click="doPayOrder">支付</button>
+		</view>
+	</view>
+</template>
+
+<script>
+	export default {
+		data() {
+			return {
+				order: {},
+				orderId: 0,
+				itemTotal: 0,
+				itemCount: 0
+			}
+		},
+		computed: {
+			total: {
+				// getter
+				get() {
+					if (this.itemTotal <= 0) {
+						return 0
+					}
+					return this.itemTotal.toFixed(2)
+				}
+			},
+			count: {
+				// getter
+				get() {
+					if (this.itemCount <= 0) {
+						return 0
+					}
+					return this.itemCount
+				}
+			}
+		},
+		onLoad(param) {
+			if (param.id != null) {
+				console.log(param.id);
+				this.orderId = param.id
+				this.doGetOrder()
+			}
+		},
+		methods: {
+			doPayOrder() {
+				const _this = this
+				uni.showModal({
+					title: '是否要付款',
+					success: function(res) {
+						if (res.confirm) {
+							console.log('用户点击确定');
+							_this.$api.useSessionLogin().then((session_key) => {
+								_this.payOrder({
+									openId: _this.orderId
+								}, {
+									'session_key': session_key,
+								})
+							}).catch(() => {
+								_this.$api.useCodeLogin().then((code) => {
+									_this.payOrder({
+										openId: _this.orderId
+									}, {
+										'code': code,
+									})
+								})
+							})
+						} else if (res.cancel) {
+							console.log('用户点击取消');
+						}
+					}
+				});
+			},
+			payOrder(data, header) {
+				const _this = this
+				this.$api.postRequest(this.mainPath + "Order/PayOrder", data, header).then((res) => {
+					if (res.statusCode === 200) {
+						if (res.data.code === 0) {
+							this.$api.errMsg(res.data.msg)
+						} else if (res.data.code === 1) {
+							this.$api.sucMsg(res.data.msg)
+							this.doGetOrder()
+						}
+					} else if (res.statusCode === 401) {
+						this.$api.useCodeLogin().then((code) => {
+							this.payOrder({
+								openId: _this.orderId
+							}, {
+								'code': code
+							})
+						})
+					} else if (res.statusCode === 400) {
+						this.$api.errMsg("订单异常")
+					}
+				}).catch((res) => {
+					this.$api.errMsg("订单异常")
+				})
+			},
+
+
+			doGetOrder() {
+				this.$api.useSessionLogin().then((session_key) => {
+					this.getOrder({
+						'orderId': this.orderId
+					}, {
+						'session_key': session_key,
+					})
+				}).catch(() => {
+					this.$api.useCodeLogin().then((code) => {
+						this.getOrder({
+							'orderId': this.orderId
+						}, {
+							'code': code,
+						})
+					})
+				})
+			},
+			getOrder(data, header) {
+				this.$api.postRequest(this.mainPath + "Order/GetOrder", data, header).then((res) => {
+					if (res.statusCode === 200) {
+						this.order = res.data.order
+						this.order.orderJsonBody = JSON.parse(res.data.order.orderJsonBody)
+						let count = 0
+						let total = 0
+						this.order.orderJsonBody.forEach((item) => {
+							count += item.nu
+							total += item.pr
+						})
+						this.itemCount = count
+						this.itemTotal = total
+						console.log(this.order);
+					} else if (res.statusCode === 401) {
+						this.$api.useCodeLogin().then((code) => {
+							this.getOrder({
+								'orderId': this.orderId
+							}, {
+								'code': code,
+							})
+						})
+					} else if (res.statusCode === 400) {
+						this.$api.errMsg("订单异常")
+					}
+				}).catch((res) => {
+					this.$api.errMsg("订单异常")
+				})
+			},
+		}
+	}
+</script>
+
+<style>
+	page {
+		background-color: #f5f5f5;
+	}
+
+	.comment {
+		padding: 20rpx 40rpx;
+	}
+
+	.top {
+		margin-bottom: 20rpx;
+		justify-content: space-between;
+	}
+
+	.top text {
+		font-size: 36rpx
+	}
+
+	.mid {
+		padding: 20rpx 30rpx;
+		background-color: #fff;
+		border-radius: 30rpx;
+		box-shadow: 2px 2px 4px #696969;
+	}
+
+	.mid .order-item:last-child {
+		border: none;
+	}
+
+	.order-item {
+		justify-content: space-between;
+		border-bottom: 1rpx solid #696969;
+	}
+
+	.item-left {
+		align-items: center;
+	}
+
+	.item-img {
+		width: 120rpx;
+		height: 120rpx;
+	}
+
+	.item-text {
+		margin-left: 20rpx;
+	}
+
+	.item-text text:nth-child(1) {
+		font-size: 30rpx;
+	}
+
+	.item-text text:nth-child(2) {
+		font-size: 22rpx;
+	}
+
+	.item-text text:nth-child(3) {}
+
+	.item-right {
+		align-self: flex-start;
+		font-size: 36rpx;
+	}
+
+	.item-bottom {
+		align-items: center;
+		justify-content: flex-end;
+	}
+
+	.item-bottom text:last-child {
+		font-size: 40rpx
+	}
+
+	.bottom {
+		margin-top: 30rpx;
+		padding: 20rpx 30rpx;
+		background-color: #fff;
+		border-radius: 30rpx;
+		box-shadow: 2px 2px 4px #696969;
+	}
+
+	.bottom view {
+		align-items: center;
+	}
+
+	.bottom view text {
+		font-size: 30rpx;
+	}
+
+	.bottom-left {
+		width: 26%;
+	}
+
+	.bottom-but {
+		margin-top: 20rpx;
+	}
+</style>
