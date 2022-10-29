@@ -15,7 +15,7 @@
 				</scroll-view>
 			</view>
 			<view class="mid-right">
-				<text v-if="cates != []" class="class-name-text">{{cates[slCate].cateName}}</text>
+				<view v-if="cates != []" class="class-name-text">{{cates[slCate].cateName}}</view>
 				<scroll-view scroll-y="true" class="order-meal scroll-Y column" show-scrollbar="false"
 					:style="{height: scrollHeight1}">
 
@@ -506,6 +506,9 @@
 	}
 
 	.class-name-text {
+		height: 60rpx;
+		padding-left: 20rpx;
+		line-height: 60rpx;
 		font-size: 36rpx;
 	}
 
@@ -519,6 +522,9 @@
 		align-items: center;
 		justify-content: space-between;
 		border-bottom: 1px solid #80D8FF;
+	}
+	.order-meal .order-meal-item:last-child{
+		border-bottom: none;
 	}
 
 	.item-img {

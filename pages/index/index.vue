@@ -3,17 +3,17 @@
 		<swiper class="swiper" circular indicator-dots=true autoplay=true interval=8000 duration=500>
 			<swiper-item>
 				<view class="bg-red swiper-item">
-					<image :src="swiperItems[0]" mode=center></image>
+					<image :src="swiperItems[0]" mode=aspectFill></image>
 				</view>
 			</swiper-item>
 			<swiper-item>
 				<view class="bg-green swiper-item">
-					<image :src="swiperItems[1]" mode=center></image>
+					<image :src="swiperItems[1]" mode=aspectFill></image>
 				</view>
 			</swiper-item>
 			<swiper-item>
 				<view class="bg-blue swiper-item">
-					<image :src="swiperItems[2]" mode=center></image>
+					<image :src="swiperItems[2]" mode=aspectFill></image>
 				</view>
 			</swiper-item>
 		</swiper>
@@ -27,7 +27,11 @@
 	export default {
 		data() {
 			return {
-				swiperItems:[]
+				swiperItems:[
+					"http://localhost:8080/BuffetOrder/img/00282-26029825.png", 
+					"http://localhost:8080/BuffetOrder/img/00283-3828490356.png", 
+					"http://localhost:8080/BuffetOrder/img/00284-1374461210.png"
+				]
 			}
 		},
 		onLoad() {
@@ -62,7 +66,10 @@
 		text-align: center;
 	}
 
-	.swiper-item image {}
+	.swiper-item image {
+		width: 100%;
+		height: 100%;
+	}
 
 	.tab-bar-meal {
 		margin-top: 20rpx;

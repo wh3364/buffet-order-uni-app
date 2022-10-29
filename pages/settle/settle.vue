@@ -258,8 +258,7 @@
 	}
 
 	.but-red {
-		height: 80rpx;
-		line-height: 80rpx;
+
 	}
 
 	.meal-item-right {
