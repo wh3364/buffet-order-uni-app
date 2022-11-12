@@ -61,8 +61,9 @@ const regUser = () => {
 								setStorage("nick", res.data.user.nickName, true)
 								setStorage("avatar", res.data.user.avatarPath, true)
 								setStorage("money", res.data.user.money, true)
-								setStorage("session_key", res.data.session_key,
-									true)
+								// setStorage("session_key", res.data.session_key,
+								// 	true)
+								setStorage("session_key", res.header.session_key, true)
 								uni.switchTab({
 									url: "/pages/index/index"
 								})
@@ -106,17 +107,59 @@ const errMsg = (title, duration = 1500) => {
 	});
 }
 
-const getRequest = (url, data) => {
+const getRequest = (url, data, header) => {
+	showLoading()
 	return new Promise((resolve, reject) => {
 		uni.request({
 			method: 'GET',
+			header,
 			url,
 			data,
 			success(res) {
 				console.log(res);
+				hideLoading()
+				if (res.statusCode === 200) {
+					//setStorage("session_key", res.data.session_key, true)
+					setStorage("session_key", res.header.session_key, true)
+					resolve(res)
+				} else if (res.statusCode === 401) {
+					uni.removeStorageSync("session_key")
+					resolve(res)
+				} else if (res.statusCode === 403) {
+					hideLoading()
+					uni.removeStorageSync("nick")
+					uni.removeStorageSync("avatar")
+					uni.removeStorageSync("money")
+					uni.removeStorageSync("session_key")
+					regUser().then(() => {
+						sucMsg("注册成功")
+						resolve()
+					}).catch(() => {
+						errMsg("注册失败")
+						reject()
+					})
+					reject()
+				} else if (res.statusCode === 408) {
+					hideLoading()
+					errMsg(res.data.msg)
+					uni.removeStorageSync("nick")
+					uni.removeStorageSync("avatar")
+					uni.removeStorageSync("money")
+					uni.removeStorageSync("session_key")
+					reject()
+				} else {
+					errMsg(res.data.error)
+					uni.removeStorageSync("nick")
+					uni.removeStorageSync("avatar")
+					uni.removeStorageSync("money")
+					uni.removeStorageSync("session_key")
+					reject()
+				}
 				resolve(res)
 			},
 			fail(res) {
+				hideLoading()
+				errMsg("服务器未响应")
 				console.log(res);
 				reject(res)
 			}
@@ -125,6 +168,7 @@ const getRequest = (url, data) => {
 }
 
 const postRequest = (url, data, header) => {
+	showLoading()
 	return new Promise((resolve, reject) => {
 		uni.request({
 			method: 'POST',
@@ -133,8 +177,10 @@ const postRequest = (url, data, header) => {
 			data,
 			success(res) {
 				console.log(res);
+				hideLoading()
 				if (res.statusCode === 200) {
-					setStorage("session_key", res.data.session_key, true)
+					//setStorage("session_key", res.data.session_key, true)
+					setStorage("session_key", res.header.session_key, true)
 					resolve(res)
 				} else if (res.statusCode === 401) {
 					// uni.removeStorageSync("nick")
@@ -143,6 +189,7 @@ const postRequest = (url, data, header) => {
 					uni.removeStorageSync("session_key")
 					resolve(res)
 				} else if (res.statusCode === 403) {
+					hideLoading()
 					uni.removeStorageSync("nick")
 					uni.removeStorageSync("avatar")
 					uni.removeStorageSync("money")
@@ -157,13 +204,14 @@ const postRequest = (url, data, header) => {
 					reject()
 				} else if (res.statusCode === 408) {
 					errMsg(res.data.msg)
+					hideLoading()
 					uni.removeStorageSync("nick")
 					uni.removeStorageSync("avatar")
 					uni.removeStorageSync("money")
 					uni.removeStorageSync("session_key")
 					reject()
 				} else {
-					errMsg(res.data)
+					errMsg(res.data.error)
 					uni.removeStorageSync("nick")
 					uni.removeStorageSync("avatar")
 					uni.removeStorageSync("money")
@@ -173,6 +221,7 @@ const postRequest = (url, data, header) => {
 				resolve(res)
 			},
 			fail(res) {
+				hideLoading()
 				errMsg("服务器未响应")
 				console.log(res);
 				reject(res)
@@ -219,9 +268,13 @@ const getStorage = (key, sync) => {
 	}
 }
 
-const isNickName = (nick) => {
-	const reg = new RegExp("")
-	return reg.test(nick)
+const showLoading = () => {
+	uni.showLoading({
+		title: '加载中'
+	});
+}
+const hideLoading = () => {
+	uni.hideLoading();
 }
 
 //注册定义的方法
@@ -239,5 +292,6 @@ export default {
 	postRequest,
 	setStorage,
 	getStorage,
-	isNickName
+	showLoading,
+	hideLoading
 }

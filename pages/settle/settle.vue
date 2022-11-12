@@ -22,7 +22,7 @@
 							</view>
 						</view>
 						<view v-if="item.hD === 0" class="item-right flex column">
-							<text class="item-v">{{item.v * item.numb}}￥</text>
+							<text class="item-v">{{(item.v * item.numb).toFixed(2)}}￥</text>
 							<view class="meal-item-right flex row">
 								<image v-if="item.numb < 1" class="add-sub-icon" :src="sub" mode="aspectFit"></image>
 								<image v-else class="add-sub-icon" :src="canSub" mode="aspectFit"
@@ -159,21 +159,33 @@
 				}
 				this.$api.postRequest(this.mainPath + "Order/Create", data, header).then((res) => {
 					if (res.statusCode === 200) {
-						this.$api.cart = {
-							body: [],
-							way: 0,
-							total: 0
+						if (res.data.code === 1) {
+							this.$api.cart = {
+								body: [],
+								way: 0,
+								total: 0
+							}
+							this.cart = {
+								body: [],
+								way: 0,
+								total: 0
+							}
+							this.$api.sucMsg("下单成功")
+							uni.redirectTo({
+								url: "/pages/orderDetail/orderDetail?id=" + res.data.order.orderId
+							})
+						} else if (res.data.code === 2) {
+							uni.showModal({
+								title: '创建失败',
+								content: res.data.msg,
+								showCancel: false,
+								success: function(res) {
+									if (res.confirm) {
+										console.log('用户点击确定');
+									}
+								}
+							})
 						}
-						this.cart = {
-							body: [],
-							way: 0,
-							total: 0
-						}
-						this.$api.sucMsg("下单成功")
-						uni.redirectTo({
-							url: "/pages/orderDetail/orderDetail?id=" + res.data.order.orderId
-						})
-
 					} else if (res.statusCode === 401) {
 						this.$api.useCodeLogin().then((code) => {
 							this.createOrder({
@@ -257,9 +269,7 @@
 		align-items: center;
 	}
 
-	.but-red {
-
-	}
+	.but-red {}
 
 	.meal-item-right {
 		align-items: center;

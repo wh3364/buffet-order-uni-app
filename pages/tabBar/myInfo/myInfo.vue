@@ -23,6 +23,9 @@
 				<image class="money-img" src="../../../static/img/icon/money.png" mode="aspectFit"></image>
 				<text class="white">立即充值</text>
 			</view>
+			<view class="mid-but flex row but" hover-class="but-hover" @click="openPopup1">
+				<text class="white">添加或修改地址</text>
+			</view>
 			<view class="mid-but flex row but" hover-class="but-hover" @click="updateWeiXinInfo">
 				<text class="white">以微信头像和昵称更新信息</text>
 			</view>
@@ -42,6 +45,14 @@
 			<button class="but name-submit" hover-class="but-hover" @click="doUploadNick">修改</button>
 		</view>
 	</view>
+	<view class="popup" v-if="popup1">
+		<view class="popup-info flex column">
+			<image class="close" src="../../../static/img/icon/close.png" mode="aspectFit" @click="hidPopup1"></image>
+			<input class="input-text" focus maxlength="100" placeholder="输入地址(最长100字符)" type="text"
+				v-model="newAddress" />
+			<button class="but name-submit" hover-class="but-hover" @click="doUpdateAddress">修改</button>
+		</view>
+	</view>
 </template>
 
 <script>
@@ -51,7 +62,9 @@
 				nick: '',
 				avatar: '',
 				newNick: '',
-				popup: false
+				newAddress: '',
+				popup: false,
+				popup1: false
 			}
 		},
 		onShow() {
@@ -100,10 +113,106 @@
 
 				})
 			},
-
-
+			openPopup() {
+				this.popup = true
+			},
+			hidPopup() {
+				this.popup = false
+			},
+			openPopup1() {
+				this.popup1 = true
+				this.$api.showLoading()
+				this.doGetAddress()
+			},
+			hidPopup1() {
+				this.popup1 = false
+				this.$api.hideLoading()
+			},
+			doGetAddress() {
+				this.$api.useSessionLogin().then((session_key) => {
+					this.getAddress({
+						'session_key': session_key,
+					})
+				}).catch(() => {
+					this.$api.useCodeLogin().then((code) => {
+						this.getAddress({
+							'code': code
+						})
+					})
+				})
+			},
+			getAddress(header) {
+				this.$api.getRequest(this.mainPath + 'User/GetAddress', null, header)
+					.then((res) => {
+						if (res.statusCode === 200) {
+							if (res.data.address.address != null) {
+								this.newAddress = res.data.address.address
+							}
+							this.$api.hideLoading()
+						} else if (res.statusCode === 401) {
+							this.$api.useCodeLogin().then((code) => {
+								this.getAddress({
+									'code': code
+								})
+							})
+						}
+					})
+					.catch(() => {
+						this.$api.errMsg("修改失败")
+						this.$api.hideLoading()
+					})
+			},
+			/**
+			 * 添加或修改地址
+			 */
+			doUpdateAddress() {
+				if (this.newAddress === '') {
+					this.$api.errMsg("请输入地址")
+					return
+				}
+				this.$api.useSessionLogin().then((session_key) => {
+					this.updateAddress({
+						'address': this.newAddress
+					}, {
+						'session_key': session_key,
+					})
+				}).catch(() => {
+					this.$api.useCodeLogin().then((code) => {
+						this.updateAddress({
+							'address': this.newAddress
+						}, {
+							'code': code
+						})
+					})
+				})
+			},
+			updateAddress(data, header) {
+				const _this = this
+				this.$api.postRequest(this.mainPath + 'User/AddOrUploadAddress', data, header)
+					.then((res) => {
+						if (res.statusCode === 200) {
+							this.$api.sucMsg("修改成功")
+							this.newAddress = ''
+							this.popup1 = false
+						} else if (res.statusCode === 401) {
+							this.$api.useCodeLogin().then((code) => {
+								this.uploadNick({
+									'address': this.newAddress
+								}, {
+									'code': code
+								})
+							})
+						}
+					})
+					.catch(() => {
+						this.$api.errMsg("修改失败")
+					})
+			},
+			/**
+			 * 修改姓名
+			 */
 			doUploadNick() {
-				if (this.newNick === ''){
+				if (this.newNick === '') {
 					this.$api.errMsg("请输入姓名")
 					return
 				}
@@ -313,8 +422,10 @@
 									uni.request({
 										url: _this.mainPath + 'Login/UploadInfo',
 										method: 'POST',
+										header:{
+											'code': codeRes.code
+										},
 										data: {
-											code: codeRes.code,
 											nick: infoRes.userInfo.nickName,
 											avatar: infoRes.userInfo.avatarUrl,
 										},
@@ -354,12 +465,6 @@
 					})
 				} else
 					_this.$api.errMsg('无法获取用户信息')
-			},
-			openPopup() {
-				this.popup = true
-			},
-			hidPopup() {
-				this.popup = false
 			}
 		}
 	}

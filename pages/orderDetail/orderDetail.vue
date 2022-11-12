@@ -56,8 +56,12 @@
 				<text class="bottom-right">{{order.orderId}}</text>
 			</view>
 		</view>
-		<view class="bottom-but">
-			<button v-if="order.orderState === 0" class="but" hover-class="but-hover" @click="doPayOrder">支付</button>
+		<view v-if="order.orderState === 0" class="bottom-but">
+			<button class="bottom-but but" hover-class="but-hover" @click="doPayOrder">支付</button>
+			<button class="bottom-but but-red" hover-class="but-red-hover" @click="doCancelOrder">取消订单</button>
+		</view>
+		<view v-if="order.orderState === 2" class="bottom-but">
+			<button class="bottom-but but" hover-class="but-hover" @click="doCompleteOrder">完成订单</button>
 		</view>
 	</view>
 </template>
@@ -153,8 +157,112 @@
 					this.$api.errMsg("订单异常")
 				})
 			},
-
-
+			doCancelOrder() {
+				const _this = this
+				uni.showModal({
+					title: '是否要取消订单',
+					success: function(res) {
+						if (res.confirm) {
+							console.log('用户点击确定');
+							_this.$api.useSessionLogin().then((session_key) => {
+								_this.cancelOrder({
+									openId: _this.orderId
+								}, {
+									'session_key': session_key,
+								})
+							}).catch(() => {
+								_this.$api.useCodeLogin().then((code) => {
+									_this.cancelOrder({
+										openId: _this.orderId
+									}, {
+										'code': code,
+									})
+								})
+							})
+						} else if (res.cancel) {
+							console.log('用户点击取消');
+						}
+					}
+				});
+			},
+			cancelOrder(data, header) {
+				const _this = this
+				this.$api.postRequest(this.mainPath + "Order/CancelOrder", data, header).then((res) => {
+					if (res.statusCode === 200) {
+						if (res.data.code === 0) {
+							this.$api.errMsg(res.data.msg)
+						} else if (res.data.code === 1) {
+							this.$api.sucMsg(res.data.msg)
+							this.doGetOrder()
+						}
+					} else if (res.statusCode === 401) {
+						this.$api.useCodeLogin().then((code) => {
+							this.cancelOrder({
+								openId: _this.orderId
+							}, {
+								'code': code
+							})
+						})
+					} else if (res.statusCode === 400) {
+						this.$api.errMsg("订单异常")
+					}
+				}).catch((res) => {
+					this.$api.errMsg("订单异常")
+				})
+			},
+			doCompleteOrder() {
+				const _this = this
+				uni.showModal({
+					title: '是否要完成订单',
+					success: function(res) {
+						if (res.confirm) {
+							console.log('用户点击确定');
+							_this.$api.useSessionLogin().then((session_key) => {
+								_this.completeOrder({
+									openId: _this.orderId
+								}, {
+									'session_key': session_key,
+								})
+							}).catch(() => {
+								_this.$api.useCodeLogin().then((code) => {
+									_this.completeOrder({
+										openId: _this.orderId
+									}, {
+										'code': code,
+									})
+								})
+							})
+						} else if (res.cancel) {
+							console.log('用户点击取消');
+						}
+					}
+				});
+			},
+			completeOrder(data, header) {
+				const _this = this
+				this.$api.postRequest(this.mainPath + "Order/CompleteOrder", data, header).then((res) => {
+					if (res.statusCode === 200) {
+						if (res.data.code === 0) {
+							this.$api.errMsg(res.data.msg)
+						} else if (res.data.code === 1) {
+							this.$api.sucMsg(res.data.msg)
+							this.doGetOrder()
+						}
+					} else if (res.statusCode === 401) {
+						this.$api.useCodeLogin().then((code) => {
+							this.completeOrder({
+								openId: _this.orderId
+							}, {
+								'code': code
+							})
+						})
+					} else if (res.statusCode === 400) {
+						this.$api.errMsg("订单异常")
+					}
+				}).catch((res) => {
+					this.$api.errMsg("订单异常")
+				})
+			},
 			doGetOrder() {
 				this.$api.useSessionLogin().then((session_key) => {
 					this.getOrder({
@@ -294,6 +402,10 @@
 
 	.bottom-left {
 		width: 26%;
+	}
+
+	.but{
+		margin-top: 20rpx;
 	}
 
 	.bottom-but {

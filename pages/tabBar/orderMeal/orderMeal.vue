@@ -15,10 +15,8 @@
 				</scroll-view>
 			</view>
 			<view class="mid-right">
-				<view v-if="cates != []" class="class-name-text">{{cates[slCate].cateName}}</view>
 				<scroll-view scroll-y="true" class="order-meal scroll-Y column" show-scrollbar="false"
 					:style="{height: scrollHeight1}">
-
 					<view class="order-meal-item flex" v-for="(item, index) in showFoods" :key="index">
 						<view class="flex row">
 							<image class="item-img" :src="item.foodImg" mode="aspectFit"></image>
@@ -66,7 +64,7 @@
 				<image class="close" src="../../../static/img/icon/close.png" mode="aspectFit" @click="hidDetail">
 				</image>
 			</view>
-			<view class="dM">
+			<view v-if="dM.mS.length > 0" class="dM">
 				<text>{{dM.mI}}</text>
 				<view class="d-body flex row">
 					<view v-for="(item, index) in dM.mS" :key="index" @click="selectDmItem(index, item.v, item.s)"
@@ -76,7 +74,6 @@
 					</view>
 				</view>
 			</view>
-
 			<view v-for="(item, index) in dR" :key="index" class="dR">
 				<text>{{item.rI}}</text>
 				<view class="d-body flex row">
@@ -88,8 +85,6 @@
 					</view>
 				</view>
 			</view>
-
-
 			<view class="popup-bottom flex row">
 				<text class="item-momey">{{singlePrice}}￥</text>
 				<button class="but" hover-class="but-hover" @click="addToCart">添加购物车</button>
@@ -115,9 +110,6 @@
 				foods: [],
 				showFoods: [],
 				slCate: 0,
-
-
-
 				food: {
 
 				},
@@ -144,12 +136,6 @@
 					}
 					return this.price.toFixed(2)
 				}
-				// setter
-				// set(newValue) {
-				// 	var names = newValue.split(' ')
-				// 	this.firstName = names[0]
-				// 	this.lastName = names[names.length - 1]
-				// }
 			},
 			total: {
 				// getter
@@ -179,7 +165,7 @@
 			// 	})
 			// 	console.log(this.cart);
 			// } else {
-				
+
 			// }
 			this.cart = this.$api.cart
 			this.getAllCate()
@@ -231,9 +217,6 @@
 				const d = JSON.parse(o.foodDetail)
 				this.dM = d.dM
 				this.dR = d.dR
-				console.log(this.dM);
-				console.log(this.dR);
-				console.log(this.food);
 				this.price = o.foodPrice
 			},
 			/**
@@ -272,7 +255,6 @@
 					return
 				}
 				for (let i = 0; i < rS.length; i++) {
-					console.log(rS[i]);
 					if (rS[i].s === 1) {
 						this.price -= rS[i].v
 					}
@@ -283,15 +265,12 @@
 						rS[i].s = 0
 					}
 				}
-				
+
 			},
 			/**
 			 * 添加购物车
 			 */
 			addToCart() {
-				console.log(this.dM);
-				console.log(this.dR);
-				console.log(this.food);
 				let cartFood = {}
 				cartFood.id = this.food.foodId
 				cartFood.n = this.food.foodName
@@ -328,6 +307,7 @@
 				}
 				this.cart.body.push(cartFood)
 				this.cart.total += this.price
+				console.log(this.cart);
 			},
 			/**
 			 * @param {Object} o
@@ -495,6 +475,7 @@
 		background-color: #eaeaea;
 		color: #343434;
 	}
+
 	.select-order-class {
 		background-color: #00B0FF;
 		color: #FFF;
@@ -503,13 +484,6 @@
 	.scroll-Y {
 		width: 100%;
 		height: 100%;
-	}
-
-	.class-name-text {
-		height: 60rpx;
-		padding-left: 20rpx;
-		line-height: 60rpx;
-		font-size: 36rpx;
 	}
 
 	.mid-right {
@@ -523,7 +497,8 @@
 		justify-content: space-between;
 		border-bottom: 1px solid #80D8FF;
 	}
-	.order-meal .order-meal-item:last-child{
+
+	.order-meal .order-meal-item:last-child {
 		border-bottom: none;
 	}
 
@@ -583,6 +558,7 @@
 		height: 100rpx;
 		align-items: center;
 		justify-content: space-between;
+		z-index: 100;
 	}
 
 	.bottom-left {
@@ -631,7 +607,7 @@
 		z-index: 9999;
 	}
 
-	.top-food-name{
+	.top-food-name {
 		margin: 10rpx 0;
 		font-size: 32rpx
 	}
