@@ -15,7 +15,7 @@
 				</scroll-view>
 			</view>
 			<view class="mid-right">
-				<!-- <scroll-view scroll-y="true" class="order-meal scroll-Y column" style="height: 100%">
+				<scroll-view scroll-y="true" class="order-meal scroll-Y column" style="height: 100%">
 					<view class="order-meal-item flex" v-for="(item, index) in showFoods" :key="index">
 						<view class="flex row">
 							<image class="item-img" :src="item.foodImg" mode="aspectFit"></image>
@@ -42,8 +42,7 @@
 							<image class="add-sub-icon" :src="canAdd" mode="aspectFit" @click="cartAdd(item)"></image>
 						</view>
 					</view>
-				</scroll-view> -->
-				<foodList/>
+				</scroll-view>
 			</view>
 		</view>
 		<view class="bottom flex row">
@@ -266,7 +265,7 @@
 			 */
 			navigateToSettle() {
 				uni.navigateTo({
-					url: "/pages/settle/settle"
+					url: "/pages/settle/index"
 				})
 			},
 			/**

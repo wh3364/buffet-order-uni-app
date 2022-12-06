@@ -159,7 +159,7 @@
 							this.$api.sucMsg("下单成功")
 							setTimeout(()=>{
 								uni.redirectTo({
-									url: "/pages/orderDetail/orderDetail?id=" + res.data.order.orderId
+									url: "/pages/orderDetail/index?id=" + res.data.order.orderId
 								})
 							}, 500)
 						} else if (res.data.code === 2) {

@@ -13,25 +13,25 @@
 			}
 		},
 		{
-			"path": "pages/tabBar/orderForm/orderForm",
+			"path": "pages/tabBar/orderForm/index",
 			"style": {
 				"navigationBarTitleText": "订单页面"
 			}
 		},
 		{
-			"path": "pages/tabBar/myInfo/myInfo",
+			"path": "pages/tabBar/myInfo/index",
 			"style": {
 				"navigationBarTitleText": "我的信息"
 			}
 		},
 		{
-			"path": "pages/settle/settle",
+			"path": "pages/settle/index",
 			"style": {
 				"navigationBarTitleText": "结算"
 			}
 		},
 		{
-			"path": "pages/orderDetail/orderDetail",
+			"path": "pages/orderDetail/index",
 			"style": {
 				"navigationBarTitleText": "订单详情"
 			}
@@ -60,12 +60,12 @@
 				"selectedIconPath": "static/img/icon/orderMealSelect.png",
 				"text": "点餐"
 			}, {
-				"pagePath": "pages/tabBar/orderForm/orderForm",
+				"pagePath": "pages/tabBar/orderForm/index",
 				"iconPath": "static/img/icon/orderForm.png",
 				"selectedIconPath": "static/img/icon/orderFormSelect.png",
 				"text": "订单"
 			}, {
-				"pagePath": "pages/tabBar/myInfo/myInfo",
+				"pagePath": "pages/tabBar/myInfo/index",
 				"iconPath": "static/img/icon/myInfo.png",
 				"selectedIconPath": "static/img/icon/myInfoSelect.png",
 				"text": "我的"

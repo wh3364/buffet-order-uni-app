@@ -98,7 +98,7 @@
 			},
 			navToOrderDetail(id) {
 				uni.navigateTo({
-					url: "/pages/orderDetail/orderDetail?id=" + id
+					url: "/pages/orderDetail/index?id=" + id
 				})
 			},
 			getOrderList() {
