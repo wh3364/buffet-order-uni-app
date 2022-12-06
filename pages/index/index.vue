@@ -31,11 +31,11 @@
 					"http://localhost:8080/BuffetOrder/img/00282-26029825.png", 
 					"http://localhost:8080/BuffetOrder/img/00283-3828490356.png", 
 					"http://localhost:8080/BuffetOrder/img/00284-1374461210.png"
-				]
+				],
 			}
 		},
 		onLoad() {
-
+			
 		},
 		methods: {
 			test() {
@@ -43,8 +43,6 @@
 				this.$api.setStorage("test", "test123")
 				this.$api.getStorage("test")
 			},
-			
-
 			tabBarToMeal() {
 				uni.switchTab({
 					url: "/pages/tabBar/orderMeal/orderMeal"

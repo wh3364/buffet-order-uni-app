@@ -7,7 +7,7 @@
 			}
 		},
 		{
-			"path": "pages/tabBar/orderMeal/orderMeal",
+			"path": "pages/tabBar/orderMeal/index",
 			"style": {
 				"navigationBarTitleText": "点餐页面"
 			}
@@ -55,7 +55,7 @@
 				"text": "首页"
 			},
 			{
-				"pagePath": "pages/tabBar/orderMeal/orderMeal",
+				"pagePath": "pages/tabBar/orderMeal/index",
 				"iconPath": "static/img/icon/orderMeal.png",
 				"selectedIconPath": "static/img/icon/orderMealSelect.png",
 				"text": "点餐"

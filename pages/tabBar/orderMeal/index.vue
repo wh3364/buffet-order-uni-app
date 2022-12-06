@@ -3,20 +3,19 @@
 		<view class="comment-body top flex row">
 			<text class="top-title">这里显示餐厅名</text>
 			<view class="flex row top-way">
-				<text :class="{'top-way-select' : cart.way === 0}" @click="changeWay()">线下点餐</text>
-				<text :class="{'top-way-select' : cart.way === 1}" @click="changeWay()">外卖</text>
+				<text :class="{'top-way-select' : way === 0}" @click="changeWay()">线下点餐</text>
+				<text :class="{'top-way-select' : way === 1}" @click="changeWay()">外卖</text>
 			</view>
 		</view>
 		<view class="mid flex row" :style="{height: scrollHeight}">
 			<view class="mid-left">
-				<scroll-view scroll-y="true" class="scroll-Y column" show-scrollbar="false">
+				<scroll-view scroll-y="true" class="scroll-Y column" style="height: 100%">
 					<view v-for="(item, index) in cates" :key="index" :class="{'select-order-class' : slCate === index}"
 						class="scroll-order-class" @click="selectCate(index)">{{item.cateName}}</view>
 				</scroll-view>
 			</view>
 			<view class="mid-right">
-				<scroll-view scroll-y="true" class="order-meal scroll-Y column" show-scrollbar="false"
-					:style="{height: scrollHeight1}">
+				<!-- <scroll-view scroll-y="true" class="order-meal scroll-Y column" style="height: 100%">
 					<view class="order-meal-item flex" v-for="(item, index) in showFoods" :key="index">
 						<view class="flex row">
 							<image class="item-img" :src="item.foodImg" mode="aspectFit"></image>
@@ -43,8 +42,8 @@
 							<image class="add-sub-icon" :src="canAdd" mode="aspectFit" @click="cartAdd(item)"></image>
 						</view>
 					</view>
-
-				</scroll-view>
+				</scroll-view> -->
+				<foodList/>
 			</view>
 		</view>
 		<view class="bottom flex row">
@@ -61,7 +60,7 @@
 		<view class="popup-info">
 			<view class="popup-top flex">
 				<text class="top-food-name">{{food.foodName}}</text>
-				<image class="close" src="../../../static/img/icon/close.png" mode="aspectFit" @click="hidDetail">
+				<image class="close" src="@/static/img/icon/close.png" mode="aspectFit" @click="hidDetail">
 				</image>
 			</view>
 			<view v-if="dM.mS.length > 0" class="dM">
@@ -95,12 +94,19 @@
 </template>
 
 <script>
+	import store from '@/store'
+	import {
+		mapState
+	} from 'vuex'
+	import {
+		getAllFoods,
+		getAllCates,
+	} from "@/common/request/food.js"
 	export default {
 		data() {
 			return {
 				windowHeight: 0,
 				scrollHeight: 0,
-				scrollHeight1: 0,
 				canAdd: '../../../static/img/icon/can-add.png',
 				add: '../../../static/img/icon/add.png',
 				canSub: '../../../static/img/icon/can-sub.png',
@@ -118,13 +124,7 @@
 					mS: []
 				},
 				dR: [],
-				price: 0,
-				cart: {
-					body: [],
-					way: 0,
-					total: 0
-				}
-
+				price: 0
 			}
 		},
 		computed: {
@@ -137,36 +137,16 @@
 					return this.price.toFixed(2)
 				}
 			},
-			total: {
-				// getter
-				get() {
-					if (this.cart.total <= 0) {
-						return 0
-					}
-					return this.cart.total.toFixed(2)
-				}
-			}
+			...mapState({
+				total: store => store.cart.total,
+				way: store => store.cart.way
+			})
 		},
 		onLoad() {
 
 		},
 		onShow() {
 			console.log("onShow");
-			// if (this.$api.cart.body.length !== 0) {
-			// 	this.$api.cart = this.cart
-			// 	this.cart.body.forEach((item) => {
-			// 		if (item.hD === 0) {
-			// 			for (let i = 0; i < this.foots.length; i++) {
-			// 				if (this.foots[i].footId === item.id) {
-			// 					this.foots[i].numb = item.numb
-			// 				}
-			// 			}
-			// 		}
-			// 	})
-			// 	console.log(this.cart);
-			// } else {
-
-			// }
 			this.cart = this.$api.cart
 			this.getAllCate()
 			this.getAllFood()
@@ -187,10 +167,6 @@
 					titleH.boundingClientRect(data => {
 						_this.scrollHeight = wHeight - data.top - bottomH + 'px'
 					}).exec()
-					titleH = uni.createSelectorQuery().select(".order-meal");
-					titleH.boundingClientRect(data => {
-						_this.scrollHeight1 = wHeight - data.top - bottomH + 'px'
-					}).exec()
 				}
 			})
 		},
@@ -199,25 +175,18 @@
 			 * 选择配送方式
 			 */
 			changeWay() {
-				if (this.cart.way === 0)
-					this.cart.way = 1
-				else if (this.cart.way === 1)
-					this.cart.way = 0
+				store.dispatch('cart/changeWay')
 			},
 			/**
-			 * @param {Object} o
 			 * 打开详细选择
 			 */
-			openDetail(o) {
+			openDetail(food) {
 				this.popup = true
-				this.food.foodId = o.foodId
-				this.food.foodName = o.foodName
-				this.food.haveDetail = o.haveDetail
-				this.food.foodImg = o.foodImg
-				const d = JSON.parse(o.foodDetail)
+				this.food = food
+				const d = JSON.parse(food.foodDetail)
 				this.dM = d.dM
 				this.dR = d.dR
-				this.price = o.foodPrice
+				this.price = food.foodPrice
 			},
 			/**
 			 * 关闭详细选择
@@ -225,14 +194,11 @@
 			hidDetail() {
 				this.popup = false
 				this.food = {}
-				this.dM = null
-				this.dR = null
+				this.dM = {}
+				this.dR = {}
 				this.price = 0
 			},
 			/**
-			 * @param {int} index
-			 * @param {int} p
-			 * @param {int} s
 			 * 多选
 			 */
 			selectDmItem(index, p, s) {
@@ -246,8 +212,6 @@
 				this.dM.mS[index].s = s
 			},
 			/**
-			 * @param {int} index
-			 * @param {object} rS
 			 * 单选
 			 */
 			selectDrItem(index, rS) {
@@ -271,110 +235,36 @@
 			 * 添加购物车
 			 */
 			addToCart() {
-				let cartFood = {}
-				cartFood.id = this.food.foodId
-				cartFood.n = this.food.foodName
-				cartFood.hD = this.food.haveDetail
-				cartFood.i = this.food.foodImg
-				cartFood.v = this.price
-				if (cartFood.hD === 1) {
-					let mS = new Array()
-					let rS = new Array()
-					if (this.dM != null) {
-						for (let i = 0; i < this.dM.mS.length; i++) {
-							if (this.dM.mS[i].s === 1) {
-								let m = {}
-								m.s = i
-								m.n = this.dM.mS[i].n
-								mS.push(m)
-							}
-						}
-					}
-					if (this.dR != null) {
-						this.dR.forEach((item) => {
-							for (let i = 0; i < item.rS.length; i++) {
-								if (item.rS[i].s === 1) {
-									let s = {}
-									s.s = i
-									s.n = item.rS[i].n
-									rS.push(s)
-								}
-							}
-						})
-					}
-					cartFood.m = mS
-					cartFood.r = rS
+				const food = {
+					...this.food
 				}
-				this.cart.body.push(cartFood)
-				this.cart.total += this.price
-				console.log(this.cart);
+				food.foodPrice = this.price
+				const dM = this.dM
+				const dR = this.dR
+				store.dispatch('cart/addFoodByCart', {
+					food,
+					dM,
+					dR
+				})
 			},
 			/**
-			 * @param {Object} o
-			 * 添加按钮
+			 * 加按钮
 			 */
-			cartAdd(o) {
-				o.numb++
-				let cartFood = {}
-				let flag = true
-				for (let i = 0; i < this.cart.body.length; i++) {
-					if (this.cart.body[i].id === o.foodId) {
-						flag = false
-						this.cart.body[i].numb = o.numb
-					}
-				}
-				if (flag) {
-					cartFood.id = o.foodId
-					cartFood.n = o.foodName
-					cartFood.hD = o.haveDetail
-					cartFood.i = o.foodImg
-					cartFood.numb = o.numb
-					cartFood.v = o.foodPrice
-					this.cart.body.push(cartFood)
-				}
-				this.cart.total += o.foodPrice
-				console.log(this.cart);
+			cartAdd(food) {
+				food.numb++
+				store.dispatch('cart/addFoodByBut', food)
 			},
 			/**
-			 * @param {Object} o
-			 * 消除按钮
+			 * 减按钮
 			 */
-			cartSub(o) {
-				o.numb--
-				let cartFood = {}
-				if (o.numb === 0) {
-					cartFood.id = o.foodId
-					cartFood.n = o.foodName
-					cartFood.hD = o.haveDetail
-					cartFood.i = o.foodImg
-					cartFood.numb = 0
-					cartFood.v = o.foodPrice
-					this.cart.body.splice(cartFood, 1)
-
-					this.cart.total -= o.foodPrice
-					console.log(this.cart);
-					return
-				}
-				for (let i = 0; i < this.cart.body.length; i++) {
-					if (this.cart.body[i].id === o.foodId) {
-						this.cart.body[i].numb = o.numb
-					}
-				}
-				this.cart.total -= o.foodPrice
-				console.log(this.cart);
+			cartSub(food) {
+				food.numb--
+				store.dispatch('cart/subFoodByBut', food)
 			},
 			/**
 			 * 去结算
 			 */
 			navigateToSettle() {
-				let arr = new Array()
-				for (let i = 0; i < this.cart.body.length; i++) {
-					if (this.cart.body[i].numb !== 0) {
-						arr.push(this.cart.body[i])
-					}
-				}
-				this.cart.body = arr
-				this.$api.cart = this.cart
 				uni.navigateTo({
 					url: "/pages/settle/settle"
 				})
@@ -383,43 +273,36 @@
 			 * 获得所有分类
 			 */
 			getAllCate() {
-				this.$api.getRequest(this.mainPath + 'Food/GetAllCate').then((res) => {
-					if (res.statusCode === 200) {
-						this.cates = res.data
-					} else
-						this.$api.errMsg("请求失败")
-				}).catch((res) => {
-					this.$api.errMsg("请求失败")
+				getAllCates().then((res) => {
+					this.cates = res.data
+				}).catch(() => {
+					this.cates = {}
 				})
 			},
 			/**
 			 * 获得所有食物
 			 */
 			getAllFood() {
-				this.$api.getRequest(this.mainPath + 'Food/GetAllFood').then((res) => {
-					if (res.statusCode) {
-						this.foods = res.data
-						for (let i = 0; i < this.foods.length; i++) {
-							if (this.foods[i].haveDetail === 0) {
-								const foodIncart = this.$api.cart.body.find(item => {
-									return this.foods[i].foodId == item.id
-								})
-								if (foodIncart != null) {
-									this.foods[i].numb = foodIncart.numb
-								} else {
-									this.foods[i].numb = 0
-								}
+				getAllFoods().then((res) => {
+					this.foods = res.data
+					for (let i = 0; i < this.foods.length; i++) {
+						if (this.foods[i].haveDetail === 0) {
+							const foodIncart = store.getters.body.find(item => {
+								return this.foods[i].foodId == item.foodId
+							})
+							if (foodIncart) {
+								this.foods[i].numb = foodIncart.numb
+							} else {
+								this.foods[i].numb = 0
 							}
 						}
-						this.selectCate(0)
-					} else
-						this.$api.errMsg("请求失败")
-				}).catch((res) => {
-					this.$api.errMsg("请求失败")
+					}
+					this.selectCate(0)
+				}).catch(() => {
+					this.foods = {}
 				})
 			},
 			/**
-			 * @param {int} index
 			 * 点击分类触发
 			 */
 			selectCate(index) {

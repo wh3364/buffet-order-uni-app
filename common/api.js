@@ -1,20 +1,6 @@
 const path = "http://localhost:8080/BuffetOrder/"
 
-const onlyLogin = (fun, data) => {
-	const _this = this
-	return new Promise((resolve, reject) => {
-		useSessionLogin().then((session_key) => {
-			fun()
-		}).catch(() => {
-			useCodeLogin().then((code) => {
-				fun()
-			})
-		})
-	})
-}
-
 const useCodeLogin = () => {
-	const _this = this
 	return new Promise((resolve, reject) => {
 		uni.login({
 			provider: 'weixin',
@@ -32,20 +18,19 @@ const useCodeLogin = () => {
 }
 
 const useSessionLogin = () => {
-	const _this = this
 	return new Promise((resolve, reject) => {
-		let session_key = getStorage("session_key", true)
-		if (session_key != '') {
+		const session_key = getStorage("session_key", true)
+		if (session_key) {
 			console.log(session_key);
 			resolve(session_key)
 		} else {
+			errMsg("登陆失败")
 			reject(null)
 		}
 	})
 }
 
 const regUser = () => {
-	const _this = this
 	return new Promise((resolve, reject) => {
 		uni.showModal({
 			title: '当前用户未注册',
@@ -54,33 +39,42 @@ const regUser = () => {
 				if (res.confirm) {
 					console.log('用户点击确定');
 					useCodeLogin().then((code) => {
-						postRequest(path + 'Login/RegUser', null, {
-							'code': code
-						}).then((res) => {
-							if (res.statusCode === 200) {
-								setStorage("nick", res.data.user.nickName, true)
-								setStorage("avatar", res.data.user.avatarPath, true)
-								setStorage("money", res.data.user.money, true)
-								// setStorage("session_key", res.data.session_key,
-								// 	true)
-								setStorage("session_key", res.header.session_key, true)
-								uni.switchTab({
-									url: "/pages/index/index"
-								})
-								resolve(res)
-							} else {
+						uni.request({
+							method: 'post',
+							url: path + 'Login/RegUser',
+							header: {
+								code
+							},
+							success(res) {
+								if (res.statusCode === 200) {
+									setStorage("nick", res.data.user.nickName,
+										true)
+									setStorage("avatar", res.data.user
+										.avatarPath,
+										true)
+									setStorage("money", res.data.user.money,
+										true)
+									setStorage("session_key", res.header
+										.session_key, true)
+									uni.switchTab({
+										url: "/pages/index/index"
+									})
+									resolve(res)
+								} else {
+									uni.removeStorageSync("nick")
+									uni.removeStorageSync("avatar")
+									uni.removeStorageSync("money")
+									uni.removeStorageSync("session_key")
+									reject(res)
+								}
+							},
+							fail(res) {
 								uni.removeStorageSync("nick")
 								uni.removeStorageSync("avatar")
 								uni.removeStorageSync("money")
 								uni.removeStorageSync("session_key")
 								reject(res)
 							}
-						}).catch((res) => {
-							uni.removeStorageSync("nick")
-							uni.removeStorageSync("avatar")
-							uni.removeStorageSync("money")
-							uni.removeStorageSync("session_key")
-							reject(res)
 						})
 					})
 				} else if (res.cancel) {
@@ -107,26 +101,37 @@ const errMsg = (title, duration = 1500) => {
 	});
 }
 
-const getRequest = (url, data, header) => {
+const request = async (req) => {
 	showLoading()
+	const url = path + req.url
+	const session_key = getStorage("session_key", true)
+	let header
+	if (session_key) {
+		header = {
+			session_key
+		}
+	} else {
+		const code = await useCodeLogin()
+		header = {
+			code
+		}
+	}
 	return new Promise((resolve, reject) => {
 		uni.request({
-			method: 'GET',
+			method: req.method,
+			data: req.data,
 			header,
 			url,
-			data,
 			success(res) {
 				console.log(res);
 				hideLoading()
 				if (res.statusCode === 200) {
-					//setStorage("session_key", res.data.session_key, true)
 					setStorage("session_key", res.header.session_key, true)
 					resolve(res)
 				} else if (res.statusCode === 401) {
 					uni.removeStorageSync("session_key")
 					resolve(res)
 				} else if (res.statusCode === 403) {
-					hideLoading()
 					uni.removeStorageSync("nick")
 					uni.removeStorageSync("avatar")
 					uni.removeStorageSync("money")
@@ -138,9 +143,7 @@ const getRequest = (url, data, header) => {
 						errMsg("注册失败")
 						reject()
 					})
-					reject()
 				} else if (res.statusCode === 408) {
-					hideLoading()
 					errMsg(res.data.msg)
 					uni.removeStorageSync("nick")
 					uni.removeStorageSync("avatar")
@@ -155,7 +158,6 @@ const getRequest = (url, data, header) => {
 					uni.removeStorageSync("session_key")
 					reject()
 				}
-				resolve(res)
 			},
 			fail(res) {
 				hideLoading()
@@ -167,58 +169,22 @@ const getRequest = (url, data, header) => {
 	})
 }
 
-const postRequest = (url, data, header) => {
-	showLoading()
+const noLoginRequest = (req) => {
+	const url = path + req.url
 	return new Promise((resolve, reject) => {
 		uni.request({
-			method: 'POST',
-			header,
+			method: req.method,
+			data: req.data,
 			url,
-			data,
 			success(res) {
 				console.log(res);
 				hideLoading()
 				if (res.statusCode === 200) {
-					//setStorage("session_key", res.data.session_key, true)
-					setStorage("session_key", res.header.session_key, true)
 					resolve(res)
-				} else if (res.statusCode === 401) {
-					// uni.removeStorageSync("nick")
-					// uni.removeStorageSync("avatar")
-					// uni.removeStorageSync("money")
-					uni.removeStorageSync("session_key")
-					resolve(res)
-				} else if (res.statusCode === 403) {
-					hideLoading()
-					uni.removeStorageSync("nick")
-					uni.removeStorageSync("avatar")
-					uni.removeStorageSync("money")
-					uni.removeStorageSync("session_key")
-					regUser().then(() => {
-						sucMsg("注册成功")
-						resolve()
-					}).catch(() => {
-						errMsg("注册失败")
-						reject()
-					})
-					reject()
-				} else if (res.statusCode === 408) {
-					errMsg(res.data.msg)
-					hideLoading()
-					uni.removeStorageSync("nick")
-					uni.removeStorageSync("avatar")
-					uni.removeStorageSync("money")
-					uni.removeStorageSync("session_key")
-					reject()
 				} else {
-					errMsg(res.data.error)
-					uni.removeStorageSync("nick")
-					uni.removeStorageSync("avatar")
-					uni.removeStorageSync("money")
-					uni.removeStorageSync("session_key")
+					errMsg("请求失败")
 					reject()
 				}
-				resolve(res)
 			},
 			fail(res) {
 				hideLoading()
@@ -231,7 +197,7 @@ const postRequest = (url, data, header) => {
 }
 
 const setStorage = (key, data, sync) => {
-	if (data == null || data == '')
+	if (!data)
 		return
 	if (sync) {
 		uni.setStorageSync(key, data)
@@ -276,20 +242,14 @@ const showLoading = () => {
 const hideLoading = () => {
 	uni.hideLoading();
 }
-
-//注册定义的方法
-
-
 export default {
 	path,
 	useSessionLogin,
 	useCodeLogin,
-	onlyLogin,
-	regUser,
 	sucMsg,
 	errMsg,
-	getRequest,
-	postRequest,
+	request,
+	noLoginRequest,
 	setStorage,
 	getStorage,
 	showLoading,

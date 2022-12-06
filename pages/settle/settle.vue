@@ -3,26 +3,26 @@
 		<view class="comment-body top flex row">
 			<text class="top-title">这里显示餐厅名</text>
 			<view class="flex row top-way">
-				<text :class="{'top-way-select' : cart.way === 0}" @click="changeWay()">线下点餐</text>
-				<text :class="{'top-way-select' : cart.way === 1}" @click="changeWay()">外卖</text>
+				<text :class="{'top-way-select' : way === 0}" @click="changeWay()">线下点餐</text>
+				<text :class="{'top-way-select' : way === 1}" @click="changeWay()">外卖</text>
 			</view>
 		</view>
 		<view class="mid-scroll" :style="{height: scrollHeight}">
-			<scroll-view scroll-y="true" class="scroll-Y column" show-scrollbar="false">
-				<view v-for="(item, index) in cart.body" :key="index" class="order">
+			<scroll-view scroll-y="true" class="scroll-Y column">
+				<view v-for="(item, index) in body" :key="index" class="order">
 					<view class="scroll-food-item flex row">
-						<image class="item-left" :src="item.i" mode="aspectFit"></image>
+						<image class="item-left" :src="item.foodImg" mode="aspectFit"></image>
 						<view class="item-mid flex column">
-							<text class="mid-name">{{item.n}}</text>
-							<view class="mid-d" v-if="item.hD === 1 && item.m.length !== 0">额外配料:
+							<text class="mid-name">{{item.cateName}}</text>
+							<view class="mid-d" v-if="item.haveDetail === 1 && item.m.length !== 0">额外配料:
 								<text v-for="(m, i) in item.m" :key="i">{{m.n + ' '}}</text>
 							</view>
-							<view class="mid-d" v-if="item.hD === 1 && item.r.length !== 0">
+							<view class="mid-d" v-if="item.haveDetail === 1 && item.r.length !== 0">
 								<text v-for="(r, i) in item.r" :key="i">{{r.n + ' '}}</text>
 							</view>
 						</view>
-						<view v-if="item.hD === 0" class="item-right flex column">
-							<text class="item-v">{{(item.v * item.numb).toFixed(2)}}￥</text>
+						<view v-if="item.haveDetail === 0" class="item-right flex column">
+							<text class="item-v">{{(item.foodPrice * item.numb).toFixed(2)}}￥</text>
 							<view class="meal-item-right flex row">
 								<image v-if="item.numb < 1" class="add-sub-icon" :src="sub" mode="aspectFit"></image>
 								<image v-else class="add-sub-icon" :src="canSub" mode="aspectFit"
@@ -35,9 +35,9 @@
 							</view>
 						</view>
 						<view v-else class="item-right flex column">
-							<text class="item-v">{{item.v}}￥</text>
+							<text class="item-v">{{item.foodPrice}}￥</text>
 							<button class="but-red" hover-class="but-red-hover"
-								@click="delItem(item.v, index)">删除</button>
+								@click="delItem(item, index)">删除</button>
 						</view>
 					</view>
 				</view>
@@ -51,13 +51,18 @@
 			</view>
 			<view class="bottom-but flex row">
 				<button class="but-red" hover-class="but-red-hover" @click="back">取消</button>
-				<button class="but" hover-class="but-hover" @click="doCreateOrder">下订单</button>
+				<button class="but" hover-class="but-hover" @click="showCreateOrder">下订单</button>
 			</view>
 		</view>
 	</view>
 </template>
 
 <script>
+	import store from '@/store'
+	import {
+		mapState
+	} from 'vuex'
+	import { createOrder } from "@/common/request/order.js"
 	export default {
 		data() {
 			return {
@@ -66,23 +71,14 @@
 				canSub: '../../static/img/icon/can-sub.png',
 				sub: '../../static/img/icon/sub.png',
 				scrollHeight: 0,
-				cart: {
-					body: [],
-					way: 0,
-					total: 0
-				}
 			}
 		},
 		computed: {
-			total: {
-				// getter
-				get() {
-					if (this.cart.total <= 0) {
-						return 0
-					}
-					return this.cart.total.toFixed(2)
-				}
-			}
+			...mapState({
+				total: store => store.cart.total,
+				way: store => store.cart.way,
+				body: store=> store.cart.body
+			})
 		},
 		onReady() {
 			/**
@@ -104,76 +100,68 @@
 			})
 		},
 		onLoad() {
-			this.cart = this.$api.cart
-			console.log(this.cart);
+
 		},
 		methods: {
 			/**
 			 * 选择配送方式
 			 */
 			changeWay() {
-				if (this.cart.way === 0)
-					this.cart.way = 1
-				else if (this.cart.way === 1)
-					this.cart.way = 0
+				store.dispatch('cart/changeWay')
 			},
 			back() {
 				uni.navigateBack()
 			},
-			delItem(v, index) {
-				this.cart.body.splice(index, 1)
-				this.cart.total -= v
+			delItem(item, index) {
+				store.dispatch('cart/delFoodByCart', item)
 			},
 			cartAdd(item, index) {
 				item.numb++
-				this.cart.total += item.v
+				store.dispatch('cart/addFoodByBut', item)
 			},
 			cartSub(item, index) {
 				item.numb--
-				this.cart.total -= item.v
-				if (item.numb === 0) {
-					this.cart.body.splice(index, 1)
-				}
+				store.dispatch('cart/subFoodByBut', item)
 			},
-			doCreateOrder() {
-				this.$api.useSessionLogin().then((session_key) => {
-					this.createOrder({
-						'data': this.cart
-					}, {
-						'session_key': session_key,
-					})
-				}).catch(() => {
-					this.$api.useCodeLogin().then((code) => {
-						this.createOrder({
-							data: this.cart
-						}, {
-							'code': code,
-						})
-					})
+			showCreateOrder(){
+				const _this = this
+				let way
+				this.way ? way = '外卖' : way = '线下点餐'
+				uni.showModal({
+					title: '是否要下订单',
+					content: `配送方式:${way}`,
+					success: function(res) {
+						if (res.confirm) {
+							_this.createOrder()
+						} else if (res.cancel) {
+							console.log('用户点击取消')
+						}
+					}
 				})
 			},
-			createOrder(data, header) {
-				if (this.cart.total <= 0.0001) {
+			createOrder() {
+				if (this.total <= 0.0001) {
 					this.$api.errMsg("购物车为空")
 					return
 				}
-				this.$api.postRequest(this.mainPath + "Order/Create", data, header).then((res) => {
+				const body = this.body.map(item => item = {
+					id: item.foodId,
+					hD: item.haveDetail,
+					numb: item.numb,
+					m: item.m,
+					r: item.r
+				})
+				const way = this.way
+				createOrder({ body, way }).then((res) => {
 					if (res.statusCode === 200) {
 						if (res.data.code === 1) {
-							this.$api.cart = {
-								body: [],
-								way: 0,
-								total: 0
-							}
-							this.cart = {
-								body: [],
-								way: 0,
-								total: 0
-							}
+							store.dispatch('cart/emptyCart')
 							this.$api.sucMsg("下单成功")
-							uni.redirectTo({
-								url: "/pages/orderDetail/orderDetail?id=" + res.data.order.orderId
-							})
+							setTimeout(()=>{
+								uni.redirectTo({
+									url: "/pages/orderDetail/orderDetail?id=" + res.data.order.orderId
+								})
+							}, 500)
 						} else if (res.data.code === 2) {
 							uni.showModal({
 								title: '创建失败',
@@ -187,13 +175,7 @@
 							})
 						}
 					} else if (res.statusCode === 401) {
-						this.$api.useCodeLogin().then((code) => {
-							this.createOrder({
-								data: this.cart
-							}, {
-								'code': code,
-							})
-						})
+						this.createOrder()
 					} else if (res.statusCode === 400) {
 						this.$api.errMsg("订单异常")
 					}

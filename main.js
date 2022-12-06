@@ -1,5 +1,6 @@
 import App from './App'
 import api from '@/common/api.js'
+import store from './store'
 
 // #ifndef VUE3
 import Vue from 'vue'
@@ -25,6 +26,8 @@ export function createApp() {
 					total: 0
 				}
   app.config.globalProperties.mainPath = api.path
+  
+  app.use(store)
   return {
     app
   }

@@ -57,16 +57,22 @@
 			</view>
 		</view>
 		<view v-if="order.orderState === 0" class="bottom-but">
-			<button class="bottom-but but" hover-class="but-hover" @click="doPayOrder">支付</button>
-			<button class="bottom-but but-red" hover-class="but-red-hover" @click="doCancelOrder">取消订单</button>
+			<button class="bottom-but but" hover-class="but-hover" @click="showPayOrder">支付</button>
+			<button class="bottom-but but-red" hover-class="but-red-hover" @click="showCancelOrder">取消订单</button>
 		</view>
 		<view v-if="order.orderState === 2" class="bottom-but">
-			<button class="bottom-but but" hover-class="but-hover" @click="doCompleteOrder">完成订单</button>
+			<button class="bottom-but but" hover-class="but-hover" @click="showCompleteOrder">完成订单</button>
 		</view>
 	</view>
 </template>
 
 <script>
+	import {
+		getOrder,
+		completeOrder,
+		cancelOrder,
+		payOrder
+	} from "@/common/request/order.js"
 	export default {
 		data() {
 			return {
@@ -97,59 +103,38 @@
 			}
 		},
 		onLoad(param) {
-			if (param.id != null) {
+			if (param.id) {
 				console.log(param.id);
 				this.orderId = param.id
-				this.doGetOrder()
+				this.getOrder()
 			}
 		},
 		methods: {
-			doPayOrder() {
+			showPayOrder() {
 				const _this = this
 				uni.showModal({
 					title: '是否要付款',
 					success: function(res) {
 						if (res.confirm) {
-							console.log('用户点击确定');
-							_this.$api.useSessionLogin().then((session_key) => {
-								_this.payOrder({
-									openId: _this.orderId
-								}, {
-									'session_key': session_key,
-								})
-							}).catch(() => {
-								_this.$api.useCodeLogin().then((code) => {
-									_this.payOrder({
-										openId: _this.orderId
-									}, {
-										'code': code,
-									})
-								})
-							})
+							_this.payOrder()
 						} else if (res.cancel) {
-							console.log('用户点击取消');
+							console.log('用户点击取消')
 						}
 					}
-				});
+				})
 			},
 			payOrder(data, header) {
-				const _this = this
-				this.$api.postRequest(this.mainPath + "Order/PayOrder", data, header).then((res) => {
+				const orderId = this.orderId
+				payOrder({ orderId }).then((res) => {
 					if (res.statusCode === 200) {
 						if (res.data.code === 0) {
 							this.$api.errMsg(res.data.msg)
 						} else if (res.data.code === 1) {
 							this.$api.sucMsg(res.data.msg)
-							this.doGetOrder()
+							this.order.orderState = 1
 						}
 					} else if (res.statusCode === 401) {
-						this.$api.useCodeLogin().then((code) => {
-							this.payOrder({
-								openId: _this.orderId
-							}, {
-								'code': code
-							})
-						})
+						this.payOrder()
 					} else if (res.statusCode === 400) {
 						this.$api.errMsg("订单异常")
 					}
@@ -157,52 +142,31 @@
 					this.$api.errMsg("订单异常")
 				})
 			},
-			doCancelOrder() {
+			showCancelOrder() {
 				const _this = this
 				uni.showModal({
 					title: '是否要取消订单',
 					success: function(res) {
 						if (res.confirm) {
-							console.log('用户点击确定');
-							_this.$api.useSessionLogin().then((session_key) => {
-								_this.cancelOrder({
-									openId: _this.orderId
-								}, {
-									'session_key': session_key,
-								})
-							}).catch(() => {
-								_this.$api.useCodeLogin().then((code) => {
-									_this.cancelOrder({
-										openId: _this.orderId
-									}, {
-										'code': code,
-									})
-								})
-							})
+							_this.cancelOrder()
 						} else if (res.cancel) {
-							console.log('用户点击取消');
+							console.log('用户点击取消')
 						}
 					}
-				});
+				})
 			},
-			cancelOrder(data, header) {
-				const _this = this
-				this.$api.postRequest(this.mainPath + "Order/CancelOrder", data, header).then((res) => {
+			cancelOrder() {
+				const orderId = this.orderId
+				cancelOrder({ orderId }).then((res) => {
 					if (res.statusCode === 200) {
 						if (res.data.code === 0) {
 							this.$api.errMsg(res.data.msg)
 						} else if (res.data.code === 1) {
 							this.$api.sucMsg(res.data.msg)
-							this.doGetOrder()
+							this.order.orderState = 4
 						}
 					} else if (res.statusCode === 401) {
-						this.$api.useCodeLogin().then((code) => {
-							this.cancelOrder({
-								openId: _this.orderId
-							}, {
-								'code': code
-							})
-						})
+						this.cancelOrder()
 					} else if (res.statusCode === 400) {
 						this.$api.errMsg("订单异常")
 					}
@@ -210,52 +174,33 @@
 					this.$api.errMsg("订单异常")
 				})
 			},
-			doCompleteOrder() {
+			showCompleteOrder() {
 				const _this = this
 				uni.showModal({
 					title: '是否要完成订单',
 					success: function(res) {
 						if (res.confirm) {
-							console.log('用户点击确定');
-							_this.$api.useSessionLogin().then((session_key) => {
-								_this.completeOrder({
-									openId: _this.orderId
-								}, {
-									'session_key': session_key,
-								})
-							}).catch(() => {
-								_this.$api.useCodeLogin().then((code) => {
-									_this.completeOrder({
-										openId: _this.orderId
-									}, {
-										'code': code,
-									})
-								})
-							})
+							_this.completeOrder()
 						} else if (res.cancel) {
-							console.log('用户点击取消');
+							console.log('用户点击取消')
 						}
 					}
-				});
+				})
 			},
-			completeOrder(data, header) {
-				const _this = this
-				this.$api.postRequest(this.mainPath + "Order/CompleteOrder", data, header).then((res) => {
+			completeOrder() {
+				const orderId = this.orderId
+				completeOrder({
+					orderId
+				}).then((res) => {
 					if (res.statusCode === 200) {
 						if (res.data.code === 0) {
 							this.$api.errMsg(res.data.msg)
 						} else if (res.data.code === 1) {
 							this.$api.sucMsg(res.data.msg)
-							this.doGetOrder()
+							this.order.orderState = 3
 						}
 					} else if (res.statusCode === 401) {
-						this.$api.useCodeLogin().then((code) => {
-							this.completeOrder({
-								openId: _this.orderId
-							}, {
-								'code': code
-							})
-						})
+						this.completeOrder()
 					} else if (res.statusCode === 400) {
 						this.$api.errMsg("订单异常")
 					}
@@ -263,25 +208,11 @@
 					this.$api.errMsg("订单异常")
 				})
 			},
-			doGetOrder() {
-				this.$api.useSessionLogin().then((session_key) => {
-					this.getOrder({
-						'orderId': this.orderId
-					}, {
-						'session_key': session_key,
-					})
-				}).catch(() => {
-					this.$api.useCodeLogin().then((code) => {
-						this.getOrder({
-							'orderId': this.orderId
-						}, {
-							'code': code,
-						})
-					})
-				})
-			},
-			getOrder(data, header) {
-				this.$api.postRequest(this.mainPath + "Order/GetOrder", data, header).then((res) => {
+			getOrder() {
+				const orderId = this.orderId
+				getOrder({
+					orderId
+				}).then((res) => {
 					if (res.statusCode === 200) {
 						this.order = res.data.order
 						this.order.orderJsonBody = JSON.parse(res.data.order.orderJsonBody)
@@ -295,13 +226,7 @@
 						this.itemTotal = total
 						console.log(this.order);
 					} else if (res.statusCode === 401) {
-						this.$api.useCodeLogin().then((code) => {
-							this.getOrder({
-								'orderId': this.orderId
-							}, {
-								'code': code,
-							})
-						})
+						this.getOrder()
 					} else if (res.statusCode === 400) {
 						this.$api.errMsg("订单异常")
 					}
@@ -404,7 +329,7 @@
 		width: 26%;
 	}
 
-	.but{
+	.but {
 		margin-top: 20rpx;
 	}
 

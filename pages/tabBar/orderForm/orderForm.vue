@@ -6,7 +6,8 @@
 			<text :class="{'txstSelect': isSelect === 2}" @click="selectText(2)">退单</text>
 		</view>
 		<view class="comment-body">
-			<scroll-view scroll-y="true" @scrolltolower="doLoadMoreList" :style="{height: scrollHeight}" class="order-list">
+			<scroll-view scroll-y="true" @scrolltolower="loadMoreList" :style="{height: scrollHeight}"
+				class="order-list">
 
 				<view v-for="(order, index) in orderList" :key="index" class="order-item"
 					@click="navToOrderDetail(order.orderId)">
@@ -37,6 +38,9 @@
 </template>
 
 <script>
+	import {
+		getOrderList
+	} from "@/common/request/order.js"
 	export default {
 		data() {
 			return {
@@ -63,7 +67,7 @@
 					let titleH = uni.createSelectorQuery().select(".comment-body");
 					titleH.boundingClientRect(data => {
 						_this.scrollHeight = wHeight - data.top + 'px'
-					}).exec()					
+					}).exec()
 				}
 			})
 		},
@@ -77,17 +81,17 @@
 					case 0:
 						this.orderState = 0
 						this.pageNum = 1
-						this.doGetOrderList()
+						this.getOrderList()
 						break;
 					case 1:
 						this.orderState = 3
 						this.pageNum = 1
-						this.doGetOrderList()
+						this.getOrderList()
 						break;
 					case 2:
 						this.orderState = 4
 						this.pageNum = 1
-						this.doGetOrderList()
+						this.getOrderList()
 						break;
 					default:
 				}
@@ -97,26 +101,11 @@
 					url: "/pages/orderDetail/orderDetail?id=" + id
 				})
 			},
-
-			doGetOrderList() {
-				this.$api.useSessionLogin().then((session_key) => {
-					this.getOrderList({
-						'orderState': this.orderState
-					}, {
-						'session_key': session_key,
-					})
-				}).catch(() => {
-					this.$api.useCodeLogin().then((code) => {
-						this.getOrderList({
-							'orderState': this.orderState
-						}, {
-							'code': code,
-						})
-					})
-				})
-			},
-			getOrderList(data, header) {
-				this.$api.postRequest(this.mainPath + "Order/GetOrderList?pageNum=" + this.pageNum, data, header).then((
+			getOrderList() {
+				const orderState = this.orderState
+				getOrderList({
+					orderState
+				}, this.pageNum).then((
 					res) => {
 					if (res.statusCode === 200) {
 						this.orderList = res.data.orders.list
@@ -129,49 +118,25 @@
 							})
 							item.count = count
 						})
-						console.log(this.orderList);
 					} else if (res.statusCode === 400) {
 						this.$api.errMsg("订单异常")
 					} else if (res.statusCode === 401) {
-						this.$api.useCodeLogin().then((code) => {
-							this.getOrderList({
-								'orderState': this.orderState
-							}, {
-								'code': code,
-							})
-						})
+						this.getOrderList()
 					}
-				}).catch((res) => {
+				}).catch(() => {
 					this.$api.errMsg("查询失败")
 				})
 			},
-			doLoadMoreList() {
-				console.log("到底了");
-				if(this.nextPage === 0){
+			loadMoreList() {
+				if(!this.nextPage)
 					return
-				}
-				this.$api.useSessionLogin().then((session_key) => {
-					this.loadMoreList({
-						'orderState': this.orderState
-					}, {
-						'session_key': session_key,
-					})
-				}).catch(() => {
-					this.$api.useCodeLogin().then((code) => {
-						this.loadMoreList({
-							'orderState': this.orderState
-						}, {
-							'code': code,
-						})
-					})
-				})
-			},
-			loadMoreList(data, header) {
-				this.$api.postRequest(this.mainPath + "Order/GetOrderList?pageNum=" + this.nextPage, data, header).then((
+				const orderState = this.orderState
+				getOrderList({
+					orderState
+				}, this.nextPage).then((
 					res) => {
 					if (res.statusCode === 200) {
 						let list = res.data.orders.list
-						//this.orderList = this.orderList.concat(res.data.orders.list)
 						this.nextPage = res.data.orders.nextPage
 						list.forEach((item) => {
 							item.orderJsonBody = JSON.parse(item.orderJsonBody)
@@ -182,44 +147,13 @@
 							item.count = count
 						})
 						this.orderList = this.orderList.concat(list)
-						console.log(this.orderList);
 					} else if (res.statusCode === 400) {
 						this.$api.errMsg("订单异常")
 					} else if (res.statusCode === 401) {
-						this.$api.useCodeLogin().then((code) => {
-							this.getOrderList({
-								'orderState': this.orderState
-							}, {
-								'code': code,
-							})
-						})
+						this.getOrderList()
 					}
-				}).catch((res) => {
+				}).catch(() => {
 					this.$api.errMsg("查询失败")
-				})
-			},
-			/**
-			 * 注册
-			 */
-			regUser() {
-				const _this = this
-				uni.showModal({
-					title: '当前用户未注册',
-					content: '是否立即注册',
-					success: function(res) {
-						if (res.confirm) {
-							console.log('用户点击确定');
-							_this.$api.regUser().then((res) => {
-								if (res.statusCode === 200) {
-									_this.$api.sucMsg("注册成功")
-								}
-							}).catch((res) => {
-								_this.$api.errMsg("注册失败")
-							})
-						} else if (res.cancel) {
-							console.log('用户点击取消');
-						}
-					}
 				})
 			}
 		}
@@ -231,7 +165,7 @@
 		background-color: #f5f5f5;
 	}
 
-	.comment-body{
+	.comment-body {
 		padding: 0;
 	}
 
@@ -340,7 +274,8 @@
 		color: #00B0FF !important;
 		border-bottom: #80D8FF 2rpx solid !important;
 	}
-	.bottom-text{
+
+	.bottom-text {
 		width: 100%;
 		text-align: center;
 	}
