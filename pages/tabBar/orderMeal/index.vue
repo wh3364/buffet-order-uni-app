@@ -15,7 +15,9 @@
 				</scroll-view>
 			</view>
 			<view class="mid-right">
-				<scroll-view scroll-y="true" class="order-meal scroll-Y column" style="height: 100%">
+				<scroll-view scroll-y="true" class="order-meal scroll-Y column" style="height: 100%"
+					refresher-enabled="true" :refresher-triggered="triggered" :refresher-threshold="100"
+					@refresherrefresh="onRefresh" @refresherrestore="onRestore" refresher-background="#f1f1f1">
 					<view class="order-meal-item flex" v-for="(item, index) in showFoods" :key="index">
 						<view class="flex row">
 							<image class="item-img" :src="item.foodImg" mode="aspectFit"></image>
@@ -104,7 +106,7 @@
 	export default {
 		data() {
 			return {
-				windowHeight: 0,
+				triggered: false,
 				scrollHeight: 0,
 				canAdd: '../../../static/img/icon/can-add.png',
 				add: '../../../static/img/icon/add.png',
@@ -142,13 +144,11 @@
 			})
 		},
 		onLoad() {
-
+			this._freshing = false;
+			this.triggered = true;
 		},
 		onShow() {
-			console.log("onShow");
-			this.cart = this.$api.cart
-			this.getAllCate()
-			this.getAllFood()
+
 		},
 		onReady() {
 			/**
@@ -271,17 +271,19 @@
 			/**
 			 * 获得所有分类
 			 */
-			getAllCate() {
-				getAllCates().then((res) => {
-					this.cates = res.data
-				}).catch(() => {
-					this.cates = {}
-				})
-			},
+			// getAllCate() {
+			// 	getAllCates().then((res) => {
+			// 		this.cates = res.data
+			// 	}).catch(() => {
+			// 		this.cates = {}
+			// 	})
+			// },
 			/**
 			 * 获得所有食物
 			 */
-			getAllFood() {
+			async getAllFood() {
+				const res = await getAllCates()
+				this.cates = res.data
 				getAllFoods().then((res) => {
 					this.foods = res.data
 					for (let i = 0; i < this.foods.length; i++) {
@@ -296,9 +298,11 @@
 							}
 						}
 					}
-					this.selectCate(0)
+					this.selectCate(this.slCate)
+					return Promise.resolve(true)
 				}).catch(() => {
 					this.foods = {}
+					return Promise.resolve(false)
 				})
 			},
 			/**
@@ -309,6 +313,18 @@
 				this.showFoods = this.foods.filter((item) => {
 					return this.cates[index].cateId === item.foodCate
 				})
+			},
+			async onRefresh() {
+				if (this._freshing) return;
+				this._freshing = true;
+				console.log('执行搜索')
+				await this.getAllFood()
+				this.triggered = false;
+				this._freshing = false;
+			},
+			onRestore() {
+				this.triggered = 'restore'; // 需要重置
+				console.log("onRestore");
 			}
 		}
 	}

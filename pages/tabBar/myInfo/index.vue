@@ -154,30 +154,6 @@
 					})
 			},
 			/**
-			 * 修改姓名
-			 */
-			// doUploadNick() {
-			// 	if (!this.newNick) {
-			// 		this.$api.errMsg("请输入姓名")
-			// 		return
-			// 	}
-			// 	this.$api.useSessionLogin().then((session_key) => {
-			// 		this.uploadNick({
-			// 			'nick': this.newNick
-			// 		}, {
-			// 			'session_key': session_key,
-			// 		})
-			// 	}).catch(() => {
-			// 		this.$api.useCodeLogin().then((code) => {
-			// 			this.uploadNick({
-			// 				'nick': this.newNick
-			// 			}, {
-			// 				'code': code
-			// 			})
-			// 		})
-			// 	})
-			// },
-			/**
 			 * 更新用户名
 			 */
 			uploadNick() {
@@ -216,7 +192,7 @@
 							console.log(chooseImageRes);
 							tempFilePaths = chooseImageRes.tempFilePaths;
 							uni.uploadFile({
-								url: _this.mainPath + 'User/UploadAvatar',
+								url: _this.$api.path + 'User/UploadAvatar',
 								filePath: tempFilePaths[0],
 								name: 'File',
 								header: {
@@ -238,7 +214,7 @@
 									} else if (uploadFileRes.statusCode === 401) {
 										_this.$api.useCodeLogin().then((code) => {
 											uni.uploadFile({
-												url: _this.mainPath +
+												url: _this.$api.path +
 													'User/UploadAvatar',
 												filePath: tempFilePaths[0],
 												name: 'File',
@@ -295,7 +271,7 @@
 							success(chooseImageRes) {
 								tempFilePaths = chooseImageRes.tempFilePaths;
 								uni.uploadFile({
-									url: _this.mainPath + 'User/UploadAvatar',
+									url: _this.$api.path + 'User/UploadAvatar',
 									filePath: tempFilePaths[0],
 									name: 'File',
 									header: {
@@ -362,7 +338,7 @@
 								provider: 'weixin',
 								success(codeRes) {
 									uni.request({
-										url: _this.mainPath + 'Login/UploadInfo',
+										url: _this.$api.path + 'Login/UploadInfo',
 										method: 'POST',
 										header: {
 											'code': codeRes.code

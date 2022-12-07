@@ -36,6 +36,9 @@ const mutations = {
 		if (state.body[index].numb < 0) {
 			state.body[index].numb = 0
 		}
+		if(state.body[index].numb === 0){
+			state.body.splice(index, 1)
+		}
 	},
 	ADD_FOOD_BY_ADD_CART: (state, food) => {
 		state.body.push(food)

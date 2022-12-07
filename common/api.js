@@ -47,32 +47,27 @@ const regUser = () => {
 							},
 							success(res) {
 								if (res.statusCode === 200) {
-									setStorage("nick", res.data.user.nickName,
-										true)
-									setStorage("avatar", res.data.user
-										.avatarPath,
-										true)
-									setStorage("money", res.data.user.money,
-										true)
-									setStorage("session_key", res.header
-										.session_key, true)
+									setStorage("nick", res.data.user.nickName)
+									setStorage("avatar", res.data.user.avatarPath)
+									setStorage("money", res.data.user.money)
+									setStorage("session_key", res.header.session_key)
 									uni.switchTab({
 										url: "/pages/index/index"
 									})
 									resolve(res)
 								} else {
-									uni.removeStorageSync("nick")
-									uni.removeStorageSync("avatar")
-									uni.removeStorageSync("money")
-									uni.removeStorageSync("session_key")
+									uni.removeStorage("nick")
+									uni.removeStorage("avatar")
+									uni.removeStorage("money")
+									uni.removeStorage("session_key")
 									reject(res)
 								}
 							},
 							fail(res) {
-								uni.removeStorageSync("nick")
-								uni.removeStorageSync("avatar")
-								uni.removeStorageSync("money")
-								uni.removeStorageSync("session_key")
+								uni.removeStorage("nick")
+								uni.removeStorage("avatar")
+								uni.removeStorage("money")
+								uni.removeStorage("session_key")
 								reject(res)
 							}
 						})
@@ -170,6 +165,7 @@ const request = async (req) => {
 }
 
 const noLoginRequest = (req) => {
+	showLoading()
 	const url = path + req.url
 	return new Promise((resolve, reject) => {
 		uni.request({

@@ -6,9 +6,10 @@
 			<text :class="{'txstSelect': isSelect === 2}" @click="selectText(2)">退单</text>
 		</view>
 		<view class="comment-body">
-			<scroll-view scroll-y="true" @scrolltolower="loadMoreList" :style="{height: scrollHeight}"
-				class="order-list">
-
+			<scroll-view scroll-y="true" class="order-list" :style="{height: scrollHeight}"
+				@scrolltolower="loadMoreList" refresher-enabled="true" :refresher-triggered="triggered"
+				:refresher-threshold="100" @refresherrefresh="onRefresh" @refresherrestore="onRestore"
+				refresher-background="#f1f1f1">
 				<view v-for="(order, index) in orderList" :key="index" class="order-item"
 					@click="navToOrderDetail(order.orderId)">
 					<view class="top-order row">
@@ -44,9 +45,10 @@
 	export default {
 		data() {
 			return {
-				isSelect: -1,
+				isSelect: 0,
 				orderList: [],
 				scrollHeight: 0,
+				triggered: false,
 				pageNum: 0,
 				orderState: 0,
 				nextPage: 0
@@ -54,9 +56,11 @@
 		},
 		onShow() {
 			console.log("onShow");
-			this.selectText(0)
+			this._freshing = false;
+			this.triggered = true;
 		},
 		onLoad() {
+			this._freshing = false
 			/**
 			 * 获得scroll的高
 			 */
@@ -72,29 +76,24 @@
 			})
 		},
 		methods: {
-			selectText(i) {
-				if (i === this.isSelect) {
-					return
-				}
+			async selectText(i) {
 				this.isSelect = i
 				switch (i) {
 					case 0:
 						this.orderState = 0
 						this.pageNum = 1
-						this.getOrderList()
-						break;
+						break
 					case 1:
 						this.orderState = 3
 						this.pageNum = 1
-						this.getOrderList()
-						break;
+						break
 					case 2:
 						this.orderState = 4
 						this.pageNum = 1
-						this.getOrderList()
-						break;
-					default:
+						break
 				}
+				await this.getOrderList()
+				return Promise.resolve()
 			},
 			navToOrderDetail(id) {
 				uni.navigateTo({
@@ -128,7 +127,7 @@
 				})
 			},
 			loadMoreList() {
-				if(!this.nextPage)
+				if (!this.nextPage)
 					return
 				const orderState = this.orderState
 				getOrderList({
@@ -155,6 +154,18 @@
 				}).catch(() => {
 					this.$api.errMsg("查询失败")
 				})
+			},
+			async onRefresh() {
+				if (this._freshing) return;
+				this._freshing = true;
+				console.log('执行搜索')
+				await this.selectText(this.isSelect)
+				this.triggered = false;
+				this._freshing = false;
+			},
+			onRestore() {
+				this.triggered = 'restore'; // 需要重置
+				console.log("onRestore");
 			}
 		}
 	}
@@ -171,7 +182,6 @@
 
 	.order-list {
 		box-sizing: border-box;
-		padding-top: 30rpx;
 	}
 
 	/* .order-list .order-item:first-child {
@@ -254,6 +264,7 @@
 
 	.top-bar {
 		height: 80rpx;
+		margin-bottom: 30rpx;
 		background-color: #FFF;
 		font-size: 38rpx;
 		line-height: 80rpx;

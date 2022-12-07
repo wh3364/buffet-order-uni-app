@@ -20,12 +20,6 @@ import { createSSRApp } from 'vue'
 export function createApp() {
   const app = createSSRApp(App)
   app.config.globalProperties.$api = api
-  app.config.globalProperties.$api.cart = {
-					body: [],
-					way: 0,
-					total: 0
-				}
-  app.config.globalProperties.mainPath = api.path
   
   app.use(store)
   return {

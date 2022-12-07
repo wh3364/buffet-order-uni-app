@@ -39,7 +39,6 @@
 		},
 		methods: {
 			test() {
-				console.log(this.mainPath);
 				this.$api.setStorage("test", "test123")
 				this.$api.getStorage("test")
 			},
