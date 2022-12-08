@@ -44,7 +44,7 @@
 			},
 			tabBarToMeal() {
 				uni.switchTab({
-					url: "/pages/tabBar/orderMeal/orderMeal"
+					url: "/pages/tabBar/orderMeal/index"
 				})
 			}
 		}

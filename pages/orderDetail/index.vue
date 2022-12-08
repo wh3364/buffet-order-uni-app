@@ -56,6 +56,7 @@
 				<text class="bottom-right">{{order.orderId}}</text>
 			</view>
 		</view>
+		<view v-if="order.orderState === 0 && time > -1" class="time unemp-color">{{ timeStr }}后自动取消订单</view>
 		<view v-if="order.orderState === 0" class="bottom-but">
 			<button class="bottom-but but" hover-class="but-hover" @click="showPayOrder">支付</button>
 			<button class="bottom-but but-red" hover-class="but-red-hover" @click="showCancelOrder">取消订单</button>
@@ -68,6 +69,9 @@
 
 <script>
 	import {
+		timeStamp
+	} from "@/common/countdown.js"
+	import {
 		getOrder,
 		completeOrder,
 		cancelOrder,
@@ -78,6 +82,9 @@
 			return {
 				order: {},
 				orderId: 0,
+				time: -1,
+				timeStr:'',
+				interval: null,
 				itemTotal: 0,
 				itemCount: 0
 			}
@@ -86,28 +93,29 @@
 			total: {
 				// getter
 				get() {
-					if (this.itemTotal <= 0) {
-						return 0
-					}
+					if (this.itemTotal <= 0)  return 0
 					return this.itemTotal.toFixed(2)
 				}
 			},
 			count: {
 				// getter
 				get() {
-					if (this.itemCount <= 0) {
-						return 0
-					}
+					if (this.itemCount <= 0)  return 0
 					return this.itemCount
 				}
 			}
 		},
 		onLoad(param) {
 			if (param.id) {
-				console.log(param.id);
 				this.orderId = param.id
 				this.getOrder()
 			}
+		},
+		// onHide(){
+		// 	console.log("onHide");
+		// },
+		onUnload() {
+			this.stopInterval()
 		},
 		methods: {
 			showPayOrder() {
@@ -125,7 +133,9 @@
 			},
 			payOrder(data, header) {
 				const orderId = this.orderId
-				payOrder({ orderId }).then((res) => {
+				payOrder({
+					orderId
+				}).then((res) => {
 					if (res.statusCode === 200) {
 						if (res.data.code === 0) {
 							this.$api.errMsg(res.data.msg)
@@ -133,6 +143,7 @@
 							this.$api.sucMsg(res.data.msg)
 							this.order.orderState = 1
 						}
+						this.stopInterval()
 					} else if (res.statusCode === 401) {
 						this.payOrder()
 					} else if (res.statusCode === 400) {
@@ -157,7 +168,9 @@
 			},
 			cancelOrder() {
 				const orderId = this.orderId
-				cancelOrder({ orderId }).then((res) => {
+				cancelOrder({
+					orderId
+				}).then((res) => {
 					if (res.statusCode === 200) {
 						if (res.data.code === 0) {
 							this.$api.errMsg(res.data.msg)
@@ -165,6 +178,7 @@
 							this.$api.sucMsg(res.data.msg)
 							this.order.orderState = 4
 						}
+						this.stopInterval()
 					} else if (res.statusCode === 401) {
 						this.cancelOrder()
 					} else if (res.statusCode === 400) {
@@ -224,6 +238,7 @@
 						})
 						this.itemCount = count
 						this.itemTotal = total
+						if (this.order.orderState === 0) this.startInterval(res.data.time)
 						console.log(this.order);
 					} else if (res.statusCode === 401) {
 						this.getOrder()
@@ -232,8 +247,24 @@
 					}
 				}).catch((res) => {
 					this.$api.errMsg("订单异常")
+					this.stopInterval()
 				})
 			},
+			startInterval(time) {
+				this.interval = setInterval(() => {
+					const obj = timeStamp(time / 1000 + 60 * 30)
+					this.time = obj.time
+					this.timeStr = obj.str
+					console.log(this.time);
+					if (this.time < 0) {
+						this.stopInterval()
+					}
+				}, 1000)
+			},
+			stopInterval(){
+				clearInterval(this.interval)
+				this.interval = null
+			}
 		}
 	}
 </script>
@@ -307,6 +338,10 @@
 
 	.item-bottom text:last-child {
 		font-size: 40rpx
+	}
+
+	.time{
+		text-align: center;
 	}
 
 	.bottom {
