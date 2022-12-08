@@ -13,7 +13,7 @@
 					<view class="scroll-food-item flex row">
 						<image class="item-left" :src="item.foodImg" mode="aspectFit"></image>
 						<view class="item-mid flex column">
-							<text class="mid-name">{{item.cateName}}</text>
+							<text class="mid-name">{{item.foodName}}</text>
 							<view class="mid-d" v-if="item.haveDetail === 1 && item.m.length !== 0">额外配料:
 								<text v-for="(m, i) in item.m" :key="i">{{m.n + ' '}}</text>
 							</view>

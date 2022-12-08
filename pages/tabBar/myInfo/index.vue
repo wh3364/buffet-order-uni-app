@@ -19,7 +19,7 @@
 					<text>000</text>
 				</view>
 			</view>
-			<view class="mid-but flex row but" hover-class="but-hover">
+			<view class="mid-but flex row but" hover-class="but-hover" @click="addMoney">
 				<image class="money-img" src="@/static/img/icon/money.png" mode="aspectFit"></image>
 				<text class="white">立即充值</text>
 			</view>
@@ -58,6 +58,7 @@
 <script>
 	import {
 		getUser,
+		addMoney,
 		getAddress,
 		updateAddress,
 		uploadNick
@@ -118,6 +119,19 @@
 				this.popup1 = false
 				this.$api.hideLoading()
 			},
+			addMoney() {
+				addMoney().then(res => {
+					if (res.statusCode === 200) {
+						this.money = res.data.money
+						this.$api.setStorage('money', res.data.money)
+					} else if (res.statusCode === 401) {
+						this.addMoney()
+					}
+				})
+			},
+			/**
+			 * 获得地址
+			 */
 			getAddress() {
 				getAddress().then((res) => {
 					if (res.statusCode === 200) {

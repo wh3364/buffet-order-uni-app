@@ -192,7 +192,7 @@ const noLoginRequest = (req) => {
 	})
 }
 
-const setStorage = (key, data, sync) => {
+const setStorage = (key, data, sync = false) => {
 	if (!data)
 		return
 	if (sync) {
@@ -212,7 +212,7 @@ const setStorage = (key, data, sync) => {
 	}
 }
 
-const getStorage = (key, sync) => {
+const getStorage = (key, sync = false) => {
 	if (sync) {
 		return uni.getStorageSync(key)
 	} else {

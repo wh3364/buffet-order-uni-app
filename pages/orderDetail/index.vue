@@ -341,6 +341,7 @@
 	}
 
 	.time{
+		margin-top: 20rpx;
 		text-align: center;
 	}
 

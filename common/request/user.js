@@ -7,6 +7,13 @@ export function getUser() {
   })
 }
 
+export function addMoney(){
+	return api.request({
+		  method: 'post',
+		  url: 'User/AddMoney'
+	})
+}
+
 export function getAddress() {
   return api.request({
 	  method: 'get',
