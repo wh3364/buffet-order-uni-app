@@ -7,8 +7,6 @@ import Vue from 'vue'
 Vue.config.productionTip = false
 App.mpType = 'app'
 
-Vue.prototype.$api = api
-
 const app = new Vue({
     ...App
 })
@@ -20,7 +18,7 @@ import { createSSRApp } from 'vue'
 export function createApp() {
   const app = createSSRApp(App)
   app.config.globalProperties.$api = api
-  
+  app.config.globalProperties.NAME = '不饿了自助点餐'
   app.use(store)
   return {
     app

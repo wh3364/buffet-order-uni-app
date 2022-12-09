@@ -13,7 +13,7 @@
 				<view v-for="(order, index) in orderList" :key="index" class="order-item"
 					@click="navToOrderDetail(order.orderId)">
 					<view class="top-order row">
-						<text>这里显示餐厅名</text>
+						<text>{{ NAME }}</text>
 						<text v-if="order.orderState === 0" class="unemp-color">待付款</text>
 						<text v-else-if="order.orderState === 1" class="unemp-color">已付款</text>
 						<text v-else-if="order.orderState === 2" class="unemp-color">发货中</text>
