@@ -3,8 +3,8 @@
 		<view class="comment-body top flex row">
 			<text class="top-title">{{ NAME }}</text>
 			<view class="flex row top-way">
-				<text :class="{'top-way-select' : way === 0}" @click="changeWay()">线下点餐</text>
-				<text :class="{'top-way-select' : way === 1}" @click="changeWay()">外卖</text>
+				<text :class="{'top-way-select' : way === 1}" @click="changeWay()">线下点餐</text>
+				<text :class="{'top-way-select' : way === 2}" @click="changeWay()">外卖</text>
 			</view>
 		</view>
 		<view class="mid-scroll" :style="{height: scrollHeight}">
@@ -35,7 +35,7 @@
 							</view>
 						</view>
 						<view v-else class="item-right flex column">
-							<text class="item-v">{{item.foodPrice}}￥</text>
+							<text class="item-v">{{ (item.foodPrice).toFixed(2) }}￥</text>
 							<button class="but-red" hover-class="but-red-hover"
 								@click="delItem(item, index)">删除</button>
 						</view>

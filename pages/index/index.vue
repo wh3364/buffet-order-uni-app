@@ -28,9 +28,9 @@
 		data() {
 			return {
 				swiperItems:[
-					"http://localhost:8080/BuffetOrder/img/00282-26029825.png", 
-					"http://localhost:8080/BuffetOrder/img/00283-3828490356.png", 
-					"http://localhost:8080/BuffetOrder/img/00284-1374461210.png"
+					"http://192.168.23.128:9001/buffet-order/img/00282-26029825.png", 
+					"http://192.168.23.128:9001/buffet-order/img/00283-3828490356.png", 
+					"http://192.168.23.128:9001/buffet-order/img/00284-1374461210.png"
 				],
 			}
 		},

@@ -14,11 +14,11 @@
 					@click="navToOrderDetail(order.orderId)">
 					<view class="top-order row">
 						<text>{{ NAME }}</text>
-						<text v-if="order.orderState === 0" class="unemp-color">待付款</text>
-						<text v-else-if="order.orderState === 1" class="unemp-color">已付款</text>
-						<text v-else-if="order.orderState === 2" class="unemp-color">发货中</text>
-						<text v-else-if="order.orderState === 3" class="unemp-color">已完成</text>
-						<text v-else-if="order.orderState === 4" class="unemp-color">已取消</text>
+						<text v-if="order.orderState === 1" class="unemp-color">待付款</text>
+						<text v-else-if="order.orderState === 2" class="unemp-color">已付款</text>
+						<text v-else-if="order.orderState === 3" class="unemp-color">发货中</text>
+						<text v-else-if="order.orderState === 4" class="unemp-color">已完成</text>
+						<text v-else-if="order.orderState === 5 " class="unemp-color">已取消</text>
 						<text v-else class="unemp-color">这里显示订单状态</text>
 					</view>
 					<scroll-view class="mid-order" scroll-x="true">
@@ -50,7 +50,7 @@
 				scrollHeight: 0,
 				triggered: false,
 				pageNum: 0,
-				orderState: 0,
+				orderState: 1,
 				nextPage: 0
 			}
 		},
@@ -80,15 +80,15 @@
 				this.isSelect = i
 				switch (i) {
 					case 0:
-						this.orderState = 0
+						this.orderState = 1
 						this.pageNum = 1
 						break
 					case 1:
-						this.orderState = 3
+						this.orderState = 4
 						this.pageNum = 1
 						break
 					case 2:
-						this.orderState = 4
+						this.orderState = 5
 						this.pageNum = 1
 						break
 				}

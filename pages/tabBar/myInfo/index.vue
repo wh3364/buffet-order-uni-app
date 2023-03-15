@@ -1,6 +1,6 @@
 <template>
 	<view class="comment">
-		<view v-if="avatar != '' && nick != ''" class="top flex row">
+		<view v-if="avatar && nick" class="top flex row">
 			<image class="top-left" :src="avatar" mode="aspectFit"></image>
 			<text>{{nick}}</text>
 		</view>
@@ -8,19 +8,18 @@
 			<image class="top-left" src="@/static/logo.png" mode="aspectFit"></image>
 			<text>点击登录</text>
 		</view>
-		<view v-if="avatar != '' && nick != ''" class="mid flex column">
+		<view v-if="avatar && nick" class="mid flex column">
 			<view class="mid-info flex row">
-				<view class="mid-left">
-					<text>本店可用金额？</text>
+				<view class="mid-itme flex column">
+					<text>本店可用金额</text>
 					<text>{{money}}￥</text>
 				</view>
-				<view class="mid-right">
+				<view class="mid-itme flex column">
 					<text>优惠卷？</text>
 					<text>000</text>
 				</view>
 			</view>
 			<view class="mid-but flex row but" hover-class="but-hover" @click="addMoney">
-				<image class="money-img" src="@/static/img/icon/money.png" mode="aspectFit"></image>
 				<text class="white">立即充值</text>
 			</view>
 			<view class="mid-but flex row but" hover-class="but-hover" @click="openPopup1">
@@ -205,6 +204,7 @@
 						success(chooseImageRes) {
 							console.log(chooseImageRes);
 							tempFilePaths = chooseImageRes.tempFilePaths;
+							_this.$api.showLoading()
 							uni.uploadFile({
 								url: _this.$api.path + 'User/UploadAvatar',
 								filePath: tempFilePaths[0],
@@ -274,13 +274,15 @@
 												}
 											})
 										})
+									} else if (uploadFileRes.statusCode === 400) {
+										_this.$api.errMsg("上传失败")
 									}
 								}
 							})
 						}
 					})
 				}).catch(() => {
-					this.$api.useCodeLogin().then((code) => {
+					_this.$api.useCodeLogin().then((code) => {
 						uni.chooseImage({
 							success(chooseImageRes) {
 								tempFilePaths = chooseImageRes.tempFilePaths;
@@ -316,6 +318,8 @@
 							}
 						})
 					})
+				}).finally(() => {
+					_this.$api.hideLoading()
 				})
 			},
 
@@ -351,11 +355,13 @@
 							uni.login({
 								provider: 'weixin',
 								success(codeRes) {
+									_this.$api.showLoading()
 									uni.request({
 										url: _this.$api.path + 'Login/UploadInfo',
 										method: 'POST',
 										header: {
-											'code': codeRes.code
+											'code': codeRes.code,
+											'session_key': _this.$api.getStorage("session_key", true)
 										},
 										data: {
 											nick: infoRes.userInfo.nickName,
@@ -368,12 +374,11 @@
 												_this.$api.setStorage("avatar", res.data
 													.user
 													.avatarPath)
-
 												_this.nick = res.data.user.nickName
 												_this.avatar = res.data.user.avatarPath
-
 												_this.$api.errMsg(res.data.msg)
 											} else if (res.statusCode === 200) {
+												uni.removeStorage("session_key")
 												_this.$api.setStorage("nick", res.data
 													.nickName)
 												_this.$api.setStorage("avatar", res.data
@@ -393,6 +398,9 @@
 						fail(res) {
 							_this.$api.errMsg('获取失败')
 							console.log(res);
+						},
+						complete() {
+							_this.$api.hideLoading()
 						}
 					})
 				} else
@@ -403,6 +411,14 @@
 </script>
 
 <style>
+	page {
+		background-color: #F8F8F8;
+	}
+
+	text {
+		font-size: 30rpx;
+	}
+
 	.comment {
 		align-items: center;
 	}
@@ -430,6 +446,7 @@
 		height: 80rpx;
 		margin: 10rpx 0;
 		line-height: 80rpx;
+		border-radius: 16rpx;
 		align-items: center;
 		justify-content: center;
 	}
@@ -437,20 +454,16 @@
 	.mid-info {
 		width: 100%;
 		margin: 10rpx 0;
+		justify-content: space-between;
 	}
 
-	.mid-info view:nth-child(1) {
-		width: 50%;
+	.mid-itme {
+		padding: 16rpx;
+		width: 42%;
+		height: 100rpx;
+		background-color: #FFF;
+		border-radius: 16rpx;
 	}
-
-	.mid-info view:nth-child(2) {
-		width: 50%;
-	}
-
-
-	.mid-left {}
-
-	.mid-right {}
 
 	.money-img {
 		width: 64rpx;

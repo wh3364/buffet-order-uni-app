@@ -46,10 +46,10 @@ const regUser = () => {
 								code
 							},
 							success(res) {
-								if (res.statusCode === 200) {
-									setStorage("nick", res.data.user.nickName)
-									setStorage("avatar", res.data.user.avatarPath)
-									setStorage("money", res.data.user.money)
+								if (res.data.code === 200) {
+									setStorage("nick", res.data.data.nickName)
+									setStorage("avatar", res.data.data.avatarPath)
+									setStorage("money", res.data.data.money)
 									setStorage("session_key", res.header.session_key)
 									uni.switchTab({
 										url: "/pages/index/index"
@@ -60,7 +60,7 @@ const regUser = () => {
 									uni.removeStorage("avatar")
 									uni.removeStorage("money")
 									uni.removeStorage("session_key")
-									reject(res)
+									reject(res.data.message)
 								}
 							},
 							fail(res) {
@@ -175,8 +175,8 @@ const noLoginRequest = (req) => {
 			success(res) {
 				console.log(res);
 				hideLoading()
-				if (res.statusCode === 200) {
-					resolve(res)
+				if (res.data.code === 200) {
+					resolve(res.data)
 				} else {
 					errMsg("请求失败")
 					reject()

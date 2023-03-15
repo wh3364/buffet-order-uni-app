@@ -2,11 +2,11 @@
 	<view class="comment">
 		<view class="top flex row">
 			<text>餐厅名</text>
-			<text v-if="order.orderState === 0">待付款</text>
-			<text v-else-if="order.orderState === 1">已付款</text>
-			<text v-else-if="order.orderState === 2">发货中</text>
-			<text v-else-if="order.orderState === 3">已完成</text>
-			<text v-else-if="order.orderState === 4">已取消</text>
+			<text v-if="order.orderState === 1">待付款</text>
+			<text v-else-if="order.orderState === 2">已付款</text>
+			<text v-else-if="order.orderState === 3">发货中</text>
+			<text v-else-if="order.orderState === 4">已完成</text>
+			<text v-else-if="order.orderState === 5">已取消</text>
 			<text v-else>订单状态</text>
 		</view>
 		<view class="mid">
@@ -34,16 +34,16 @@
 			</view>
 			<view class="flex row">
 				<text class="bottom-left unemp-color">取餐方式</text>
-				<text v-if="order.orderWay === 0" class="bottom-right">线下点餐</text>
-				<text v-else-if="order.orderWay === 1" class="bottom-right">外卖</text>
+				<text v-if="order.orderWay === 1" class="bottom-right">线下点餐</text>
+				<text v-else-if="order.orderWay === 2" class="bottom-right">外卖</text>
 				<text v-else class="bottom-right">取餐方式</text>
 
 			</view>
-			<view v-if="order.orderWay === 0" class="flex row">
+			<view v-if="order.orderWay === 1" class="flex row">
 				<text class="bottom-left unemp-color">取餐码</text>
 				<text class="bottom-right">{{order.orderGetNumb}}</text>
 			</view>
-			<view v-if="order.orderWay === 1" class="flex row">
+			<view v-if="order.orderWay === 2" class="flex row">
 				<text class="bottom-left unemp-color">地址</text>
 				<text class="bottom-right">{{order.orderAddress}}</text>
 			</view>
@@ -56,12 +56,12 @@
 				<text class="bottom-right">{{order.orderId}}</text>
 			</view>
 		</view>
-		<view v-if="order.orderState === 0 && time > -1" class="time unemp-color">{{ timeStr }}后自动取消订单</view>
-		<view v-if="order.orderState === 0" class="bottom-but">
+		<view v-if="order.orderState === 1 && time > -1" class="time unemp-color">{{ timeStr }}后自动取消订单</view>
+		<view v-if="order.orderState === 1" class="bottom-but">
 			<button class="bottom-but but" hover-class="but-hover" @click="showPayOrder">支付</button>
 			<button class="bottom-but but-red" hover-class="but-red-hover" @click="showCancelOrder">取消订单</button>
 		</view>
-		<view v-if="order.orderState === 2" class="bottom-but">
+		<view v-if="order.orderState === 3" class="bottom-but">
 			<button class="bottom-but but" hover-class="but-hover" @click="showCompleteOrder">完成订单</button>
 		</view>
 	</view>
@@ -141,7 +141,7 @@
 							this.$api.errMsg(res.data.msg)
 						} else if (res.data.code === 1) {
 							this.$api.sucMsg(res.data.msg)
-							this.order.orderState = 1
+							this.order.orderState = 2
 						}
 						this.stopInterval()
 					} else if (res.statusCode === 401) {
@@ -176,7 +176,7 @@
 							this.$api.errMsg(res.data.msg)
 						} else if (res.data.code === 1) {
 							this.$api.sucMsg(res.data.msg)
-							this.order.orderState = 4
+							this.order.orderState = 5
 						}
 						this.stopInterval()
 					} else if (res.statusCode === 401) {
@@ -211,7 +211,7 @@
 							this.$api.errMsg(res.data.msg)
 						} else if (res.data.code === 1) {
 							this.$api.sucMsg(res.data.msg)
-							this.order.orderState = 3
+							this.order.orderState = 4
 						}
 					} else if (res.statusCode === 401) {
 						this.completeOrder()
@@ -238,7 +238,7 @@
 						})
 						this.itemCount = count
 						this.itemTotal = total
-						if (this.order.orderState === 0) this.startInterval(res.data.time)
+						if (this.order.orderState === 1) this.startInterval(res.data.time)
 						console.log(this.order);
 					} else if (res.statusCode === 401) {
 						this.getOrder()

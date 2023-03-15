@@ -1,7 +1,7 @@
 const getDefaultState = () => {
 	return {
 		body: [],
-		way: 0,
+		way: 1,
 		total: 0
 	}
 }
@@ -56,7 +56,7 @@ const mutations = {
 		}
 	},
 	CHANGE_WAY: (state) => {
-		state.way ? state.way = 0 : state.way = 1
+		state.way === 1 ? state.way = 2 : state.way = 1
 	},
 	// CHANGE_TOTAL: (state, total) => {
 	// 	state.total = total
