@@ -1,21 +1,28 @@
-# 不饿了自助点餐微信小程序(暂定)
+# 不饿了自助点餐微信小程序
 
 ### 项目介绍
 
-本项目基于springboot，uniapp 前后端分离开发
+​	本系统采用前后端分离架构，前端主要使用Vue、Uni-App、Echarts等技术，后端使用SpringBoot、MyBatis、Redis、RabbitMQ、Minio等技术，以保证系统的高效性。
+
+​       为了保证系统的安全性，采用JWT（JSON Web Token）对用户进行权限验证，采用SpringSecurity进行安全性的维护。
 
 - 后端主要技术：springboot，mybatis，redis，rabbitmq
-  ​	地址：[BuffetOrderSpringboot: 这是一个自助点餐系统的后端 (gitee.com)](https://gitee.com/fchgit/buffet-order-springboot)
-
+  地址：
+  - Gitee： [BuffetOrderSpringboot(gitee.com)](https://gitee.com/fchgit/buffet-order-springboot)
+  - GitHub：[BuffetOrderSpringboot(github.com)](https://github.com/wh3364/buffet-order-springboot)
 - 微信小程序：uniapp
-  ​	地址：[BuffetOrderUniApp: 这是一个基于uniapp的微信自助点餐小程序 (gitee.com)](https://gitee.com/fchgit/buffet-order-uni-app)
+  地址：
+  - Gitee：[BuffetOrderUniApp(gitee.com)](https://gitee.com/fchgit/buffet-order-uni-app)
+  - GitHub：[BuffetOrderUniApp(github.com)](https://github.com/wh3364/buffet-order-uni-app)
+- 管理员端：vue
+  地址：
+  - Gitee：[BuffetOrderAdmin(gitee.com)](https://gitee.com/fchgit/buffet-order-admin)
+  - GitHub：[BuffetOrderAdmin(github.com)](https://github.com/wh3364/buffet-order-admin)
 
-- 管理员端：vue, element-ui
-  ​	地址：[BuffetOrderAdmin: 这是一个自助点餐小程序的管理页面 (gitee.com)](https://gitee.com/fchgit/buffet-order-admin)
+#### 效果图: 
 
-#### 效果图:  
+##### 微信小程序:
 
-##### 	微信小程序:
 <div align=center>
     <img src="https://gitee.com/fchgit/buffet-order-springboot/raw/master/%E5%9B%BE/%E6%95%88%E6%9E%9C%E5%9B%BE/wx-1.png" width="300"/>    <img src="https://gitee.com/fchgit/buffet-order-springboot/raw/master/%E5%9B%BE/%E6%95%88%E6%9E%9C%E5%9B%BE/wx-2.png" width="300"/>
 </div>
@@ -24,13 +31,22 @@
     <img src="https://gitee.com/fchgit/buffet-order-springboot/raw/master/%E5%9B%BE/%E6%95%88%E6%9E%9C%E5%9B%BE/wx-3.png" width="300"/>    <img src="https://gitee.com/fchgit/buffet-order-springboot/raw/master/%E5%9B%BE/%E6%95%88%E6%9E%9C%E5%9B%BE/wx-4.png" width="300"/>
 </div>
 
-##### 	管理员端:
+<div align=center>
+    <img src="https://gitee.com/fchgit/buffet-order-springboot/raw/master/%E5%9B%BE/%E6%95%88%E6%9E%9C%E5%9B%BE/wx-5.png" width="300"/>    <img src="https://gitee.com/fchgit/buffet-order-springboot/raw/master/%E5%9B%BE/%E6%95%88%E6%9E%9C%E5%9B%BE/wx-6.png" width="300"/>
+</div>
+
+##### 管理员端:
+
 <div align=center>
     <img src="https://gitee.com/fchgit/buffet-order-springboot/raw/master/%E5%9B%BE/%E6%95%88%E6%9E%9C%E5%9B%BE/admin-1.png" width="600"/>
 </div>
 
 <div align=center>
     <img src="https://gitee.com/fchgit/buffet-order-springboot/raw/master/%E5%9B%BE/%E6%95%88%E6%9E%9C%E5%9B%BE/admin-2.png" width="600"/>
+</div>
+
+<div align=center>
+    <img src="https://gitee.com/fchgit/buffet-order-springboot/raw/master/%E5%9B%BE/%E6%95%88%E6%9E%9C%E5%9B%BE/admin-3.png" width="600"/>
 </div>
 
 ### 项目部署
