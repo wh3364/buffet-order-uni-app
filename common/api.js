@@ -1,4 +1,4 @@
-const path = "http://localhost:8080/BuffetOrder/"
+const path = "http://localhost:8080/"
 
 const useCodeLogin = () => {
 	return new Promise((resolve, reject) => {
@@ -41,16 +41,18 @@ const regUser = () => {
 					useCodeLogin().then((code) => {
 						uni.request({
 							method: 'post',
-							url: path + 'Login/RegUser',
+							url: path + 'User/RegUser',
 							header: {
 								code
 							},
 							success(res) {
 								if (res.data.code === 200) {
 									setStorage("nick", res.data.data.nickName)
-									setStorage("avatar", res.data.data.avatarPath)
+									setStorage("avatar", res.data.data
+										.avatarPath)
 									setStorage("money", res.data.data.money)
-									setStorage("session_key", res.header.session_key)
+									setStorage("session_key", res.header
+										.session_key)
 									uni.switchTab({
 										url: "/pages/index/index"
 									})

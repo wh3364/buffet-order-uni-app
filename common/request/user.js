@@ -3,7 +3,7 @@ import api from "../api.js"
 export function getUser() {
   return api.request({
 	  method: 'post',
-	  url: 'Login/LoginUser'
+	  url: 'User/LoginUser'
   })
 }
 
